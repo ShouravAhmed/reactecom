@@ -1,0 +1,58 @@
+/* AdminPanel.css */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: #fff; /* Set the background to white */
+  color: #000; /* Set text color to black */
+}
+
+.icon{
+  height: 50px;
+  width: 50px;
+}
+
+.admin-panel-container {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background-color: #fff;
+  color: #000;
+}
+
+.page-title {
+  font-size: 24px;
+  color: black;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.card-container {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  max-width: 800px; /* Set a maximum width for the card container */
+  margin: 0 auto; /* Center the card container */
+}
+
+.card {
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 20px;
+  margin: 10px;
+  text-align: center;
+  width: calc(50% - 20px); /* Two cards in a row with some margin */
+  box-sizing: border-box; /* Include padding in the width */
+
+  color: black;
+  text-decoration: none;
+}
+
+.card img {
+  max-width: 100%;
+  height: auto;  
+}
+
