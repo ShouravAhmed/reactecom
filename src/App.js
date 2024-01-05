@@ -52,7 +52,7 @@ function App() {
             </Route>
 
             <Route path='admin-panel/' element={<AdminOutlet/>}>
-              <Route path='dashboard' element={<AdminDashboard/>}/>
+              <Route path='' element={<AdminDashboard/>}/>
               
               <Route path='admin-management' element={<AdminManagement/>}/>
               <Route path='product-management' element={<AdminDashboard/>}/>

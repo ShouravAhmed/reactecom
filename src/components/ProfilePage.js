@@ -11,7 +11,7 @@ import RightArrow from '../assets/images/right-arrow-icon.png'
 
 import { AuthContext } from '../contexts/AuthContext';
 
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import {useNavigate } from 'react-router-dom';
 
 import { useForm } from 'react-hook-form';
@@ -156,13 +156,13 @@ function ProfilePage() {
           <div className="profile-row submit-btn" onClick={()=>{
                 showToast("Logout Successfull. See You Again!"); 
                 handleLogout();
-                return navigate('/login');
+                return navigate('login', { replace: true });
               }
             }>
             <div className="submit-btn-text">Logout</div>
           </div>
           {userProfile.is_staff && 
-            <div className="profile-row order-history" onClick={() => navigate('dashboard')}>
+            <div className="profile-row order-history" onClick={() => navigate('/admin-panel', { replace: true })}>
               <i className="fa fa-cogs" aria-hidden="true" style={{marginLeft: 15}}></i>
               <div className="order-history-text" style={{marginLeft: 25}}>Admin Panel</div>
               <i className="fa fa-arrow-right" aria-hidden="true" style={{textAlign: 'right', marginRight: 15}}></i>

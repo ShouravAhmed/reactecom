@@ -31,6 +31,9 @@ const BackButton = () => {
 
 function TopNavbar() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  console.log("location: ", location.pathname);
 
   const {authData} = useContext(AuthContext); 
   const {userProfile} = authData;
@@ -44,7 +47,11 @@ function TopNavbar() {
           
           <BackButton />
           
-          <div onClick={() => navigate('/')} className="top-navbar-icon-and-brand">
+          <div onClick={() => {
+              if(location.pathname !== '/') {
+                navigate('', { replace: true })
+              }
+            }} className="top-navbar-icon-and-brand">
             <img src={BrandLogo} alt="brand" className="top-navbar-brand-icon"/>
             <span className="top-navbar-brand-name">
               <span className="bold">Fabri</span>
@@ -52,7 +59,11 @@ function TopNavbar() {
             </span>
           </div>
         </div>
-        <div onClick={() => navigate((userProfile ? "/profile" : "/login"))} className="top-navbar-right">
+        <div onClick={() => {
+            if(location.pathname !== '/profile') {
+              navigate((userProfile ? "profile" : "login"))
+            }
+          }} className="top-navbar-right">
           {
             userProfile ? (
               <span className="top-navbar-user-username">Hi, {userProfile.full_name ? userProfile.full_name.split(' ')[0].slice(0, 9) : 'User'}</span>
