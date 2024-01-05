@@ -10,6 +10,7 @@ import { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 
 const BackButton = () => {
+  console.log('Back button loaded');
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -51,7 +52,7 @@ function TopNavbar() {
             </span>
           </div>
         </div>
-        <div onClick={navigate((userProfile ? "/profile" : "/login"))} className="top-navbar-right">
+        <div onClick={() => navigate((userProfile ? "/profile" : "/login"))} className="top-navbar-right">
           {
             userProfile ? (
               <span className="top-navbar-user-username">Hi, {userProfile.full_name ? userProfile.full_name.split(' ')[0].slice(0, 9) : 'User'}</span>
