@@ -61,7 +61,7 @@ function TopNavbar() {
         </div>
         <div onClick={() => {
             if(location.pathname !== '/profile') {
-              navigate((userProfile ? "profile" : "login"))
+              navigate((userProfile ? "profile" : "login"));
             }
           }} className="top-navbar-right">
           {

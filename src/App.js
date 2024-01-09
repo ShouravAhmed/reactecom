@@ -11,6 +11,8 @@ import { PrivateOutlet } from './containers/PrivateOutlet';
 import { AdminOutlet } from './containers/AdminOutlet';
 import AdminDashboard from './components/AdminDashboard';
 import AdminManagement from './components/AdminManagement';
+import ProductManagement from './components/ProductManagement';
+import ProductCategories from './components/ProductCategories';
 
 import ProfilePage from './components/ProfilePage';
 import Login from './components/Login';
@@ -55,7 +57,10 @@ function App() {
               <Route path='' element={<AdminDashboard/>}/>
               
               <Route path='admin-management' element={<AdminManagement/>}/>
-              <Route path='product-management' element={<AdminDashboard/>}/>
+              <Route path='product-management' element={<ProductManagement/>}/>
+              
+              <Route path='product-management/categories' element={<ProductCategories/>}/>
+              
               <Route path='order-management' element={<AdminDashboard/>}/>
               <Route path='user-management' element={<AdminDashboard/>}/>
               <Route path='accounce-management' element={<AdminDashboard/>}/>
