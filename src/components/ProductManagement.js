@@ -17,7 +17,7 @@ function ProductManagement() {
   const [searchName, setSearchName] = useState('');
   const [searchCategoryTitle, setSearchCategoryTitle] = useState('All Categories');
 
-  const dempProductList = [
+  const demoProductList = [
     {
         "product_id": 7,
         "product_category": {"id": 1, "category_name": "Category 1"},
@@ -142,7 +142,9 @@ function ProductManagement() {
 
   const [productCategories, setProductCategories] = useState([]);
   const [allSelected, setAllSelected] = useState(false);
-  const [allVisibleProducts, setAllVisibleProducts] = useState([]);
+
+  const [productList, setProductList] = useState([]);
+  const [visibleProductList, setVisibleProductList] = useState([]);
 
   const [stockSortState, setStockSortState] = useState(0);
   const [saleSortState, setSaleSortState] = useState(0);
@@ -153,12 +155,42 @@ function ProductManagement() {
         for(let product of productList) {
             initProducts.push({...product, is_selected: false})
         }
-        setAllVisibleProducts(initProducts);
+        setVisibleProductList(initProducts);
         console.log("new populated products: ", initProducts);
     };
 
+    const sortProductList = async () => {
+        let sortedProductList = [...productList];
+        
+        if(saleSortState !== 0) {
+            if(saleSortState === 1) {
+                sortedProductList = sortedProductList.sort((a, b) => b.sale_count - a.sale_count);
+            }
+            else if(saleSortState === 2) {
+                sortedProductList = sortedProductList.sort((a, b) => a.sale_count - b.sale_count);
+            }
+        }
+        else if(popularitySortState !== 0) {
+            if(popularitySortState === 1) {
+                sortedProductList = sortedProductList.sort((a, b) => (b.visit_count + (b.wishlist_count * 3) + (b.sale_count * 11)) - (a.visit_count + (a.wishlist_count * 3) + (a.sale_count * 11)));
+            }
+            else if(popularitySortState === 2) {
+                sortedProductList = sortedProductList.sort((a, b) => (a.visit_count + (a.wishlist_count * 3) + (a.sale_count * 11)) - (b.visit_count + (b.wishlist_count * 3) + (b.sale_count * 11)));
+            }
+        }
+        else {
+            populateVisibleProductList(productList);
+        }
+        
+        populateVisibleProductList(sortedProductList);
+    }
+
     useEffect(() => {
-        populateVisibleProductList(dempProductList);
+        populateVisibleProductList(productList);
+    }, [productList]);
+
+    useEffect(() => {
+        setProductList(demoProductList);
         setProductCategories(demoProductCategories);
     }, []);
 
@@ -167,7 +199,7 @@ function ProductManagement() {
     };
 
     const createDiscount = () => {
-        const selectedProductIds = allVisibleProducts
+        const selectedProductIds = visibleProductList
             .filter(product => product.is_selected)
             .map(product => product.product_id);
 
@@ -176,26 +208,26 @@ function ProductManagement() {
 
     const handleSelectAllProducts = () => {
         console.log('Toggling select all products');
-        const totalSelectedProduct = allVisibleProducts.filter(product => product.is_selected).length;
+        const totalSelectedProduct = visibleProductList.filter(product => product.is_selected).length;
 
         console.log("total seleced: ", totalSelectedProduct);
 
-        if (allVisibleProducts.length === totalSelectedProduct.length || allSelected) {
-            const updatedProducts = allVisibleProducts.map((product) => { 
+        if (visibleProductList.length === totalSelectedProduct.length || allSelected) {
+            const updatedProducts = visibleProductList.map((product) => { 
                 return {...product, is_selected: false};
             });
             
-            setAllVisibleProducts(updatedProducts);
+            setVisibleProductList(updatedProducts);
             setAllSelected(false);
 
             console.log('updatedProducts: ', updatedProducts);
         } 
         else {
-            const updatedProducts = allVisibleProducts.map((product) => {
+            const updatedProducts = visibleProductList.map((product) => {
                 return {...product, is_selected: true};
             });
             
-            setAllVisibleProducts(updatedProducts);
+            setVisibleProductList(updatedProducts);
             setAllSelected(true);
 
             console.log('updatedProducts: ', updatedProducts);
@@ -205,7 +237,7 @@ function ProductManagement() {
   const handleProductSelection = (productId) => {
     console.log("handle product selection: ", productId);
 
-    setAllVisibleProducts((prevProducts) => {
+    setVisibleProductList((prevProducts) => {
         const updatedProducts = prevProducts.map((product) => ((product.product_id === productId) ? {...product, is_selected: !product.is_selected} : product));
 
         console.log('=> Updated products: ', updatedProducts);
@@ -223,11 +255,39 @@ function ProductManagement() {
 
   const stockSortClicked = () => {
     setStockSortState((prv) => {
+        setSaleSortState(0);
+        setPopularitySortState(0);
+        if(prv === 2) return 0;
         if(prv === 0) return 1;
-        else if(prv === 1) return 2;
-        else return 0;
+        if(prv === 1) return 2;
     });
   }
+
+  const saleSortClicked = () => {
+    setSaleSortState((prv) => {
+        setStockSortState(0);
+        setPopularitySortState(0);
+        if(prv === 2) return 0;
+        if(prv === 0) return 1;
+        if(prv === 1) return 2;
+    });
+  }
+
+
+  const popularitySortClicked = () => {
+    setPopularitySortState((prv) => {
+        setSaleSortState(0);
+        setStockSortState(0);
+        if(prv === 2) return 0;
+        if(prv === 0) return 1;
+        if(prv === 1) return 2;
+    });
+  }
+
+    useEffect(() => {
+        sortProductList();
+    }, [saleSortState, stockSortState, popularitySortState]);
+
 
   console.log('product list is being loaded');
 
@@ -289,7 +349,7 @@ function ProductManagement() {
                     <option value="All Categories">All Categories</option>
                     {
                         productCategories.map((category) => {
-                            return (<option value={category.title}>{category.title}</option>);
+                            return (<option key={category.id} value={category.title}>{category.title}</option>);
                         })
                     }
                 </select>
@@ -298,7 +358,7 @@ function ProductManagement() {
             </div>
 
             <div className="product-management-second-row">
-                <p>Total Product - {allVisibleProducts ? allVisibleProducts.length : 0} : Selected Products - {allVisibleProducts ? allVisibleProducts.filter(product => product.is_selected).length : 0}</p>
+                <p>Total Product - {visibleProductList ? visibleProductList.length : 0} : Selected Products - {visibleProductList ? visibleProductList.filter(product => product.is_selected).length : 0}</p>
             </div>
 
             <table className="product-management-product-table">
@@ -312,12 +372,12 @@ function ProductManagement() {
                     <th>Name</th>
                     <th>Price</th>
                     <th onClick={stockSortClicked}>Stock {stockSortState === 0 ? <i class="fa fa-sort" aria-hidden="true"></i> : (stockSortState === 1 ? <i class="fa fa-sort-amount-asc" aria-hidden="true"></i> : <i class="fa fa-sort-amount-desc" aria-hidden="true"></i>)}</th>
-                    <th>Sale</th>
-                    <th>Popularity</th>
+                    <th onClick={saleSortClicked}>Sale {saleSortState === 0 ? <i class="fa fa-sort" aria-hidden="true"></i> : (saleSortState === 1 ? <i class="fa fa-sort-amount-asc" aria-hidden="true"></i> : <i class="fa fa-sort-amount-desc" aria-hidden="true"></i>)}</th>
+                    <th onClick={popularitySortClicked}>Popularity {popularitySortState === 0 ? <i class="fa fa-sort" aria-hidden="true"></i> : (popularitySortState === 1 ? <i class="fa fa-sort-amount-asc" aria-hidden="true"></i> : <i class="fa fa-sort-amount-desc" aria-hidden="true"></i>)}</th>
                 </tr>
                 </thead>
                 <tbody>
-                {allVisibleProducts && allVisibleProducts.map((product) => (
+                {visibleProductList && visibleProductList.map((product) => (
                     <tr key={product.product_id}>
                         <td>
                             <input
@@ -344,7 +404,7 @@ function ProductManagement() {
                             </p>
                         </td>
                         <td style={{ fontWeight: 200, fontSize: '0.9rem' }}>{product.sale_count}</td>
-                        <td style={{ fontWeight: 200, fontSize: '0.9rem' }}>{product.visit_count + (product.wishlist_count * 5)}</td>
+                        <td style={{ fontWeight: 200, fontSize: '0.9rem' }}>{product.visit_count + (product.wishlist_count * 3) + (product.sale_count * 11)}</td>
                     </tr>
                 ))}
                 </tbody>
