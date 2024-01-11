@@ -30,6 +30,7 @@ function ProductManagement() {
             'cover_picture': 'dresses_cover.jpg',
             'profile_picture': 'dresses_profile.jpg',
             'show_in_home_page': true,
+            'category_order': 2
         },
         {
             'title': 'Jeans',
@@ -37,6 +38,7 @@ function ProductManagement() {
             'cover_picture': 'jeans_cover.jpg',
             'profile_picture': 'jeans_profile.jpg',
             'show_in_home_page': true,
+            'category_order': 3
         },
         {
             'title': 'Sweaters',
@@ -44,6 +46,7 @@ function ProductManagement() {
             'cover_picture': 'sweaters_cover.jpg',
             'profile_picture': 'sweaters_profile.jpg',
             'show_in_home_page': true,
+            'category_order': 4
         },
         {
             'title': 'Activewear',
@@ -51,14 +54,15 @@ function ProductManagement() {
             'cover_picture': 'activewear_cover.jpg',
             'profile_picture': 'activewear_profile.jpg',
             'show_in_home_page': false,
+            'category_order': 5
         },
-    ]
+  ]
 
-    const [productCategories, setProductCategories] = useState([]);
+  const [productCategories, setProductCategories] = useState([]);
 
-    useEffect(() => {
-        setProductCategories(demoProductCategories);
-    }, []);
+  useEffect(() => {
+      setProductCategories(demoProductCategories);
+  }, []);
 
   const updateCategoryOrder = () => {
     console.log('update category order');
@@ -83,8 +87,22 @@ function ProductManagement() {
         </div>
 
 
-        <div className="product-management-container">
-            
+        <div className="product-category-management-container">
+            {productCategories && productCategories.map((category) => (
+              <div key={category.id} className="product-category-row">
+                <div className="product-category-image">
+                  <img src={category.profile_picture} alt={category.title} />
+                </div>
+                <div className="product-category-details">
+                  <h3>{category.title}</h3>
+                  <p>{category.description}</p>
+                </div>
+                <div className="product-category-buttons">
+                  <button onClick={() => updateCategoryOrder(category.id, 'up')}>Up</button>
+                  <button onClick={() => updateCategoryOrder(category.id, 'down')}>Down</button>
+                </div>
+              </div>
+            ))}
         </div>
       </div>
       <br /><br /><br />
