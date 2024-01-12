@@ -133,12 +133,7 @@ body {
 .product-category-management-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-
-  margin: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-color: white;
-  padding: 20px;
+  gap: 10px;
 }
 
 .product-category-row {
@@ -146,16 +141,15 @@ body {
   align-items: center;
   justify-content: space-between;
   background-color: #fff;
-  padding: 20px;
+  padding: 10px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .product-category-image img {
-  width: 80px; /* Adjust the width as needed */
+  width: 100px;
   height: auto;
-  border-radius: 50%;
-  margin-right: 20px;
+  margin-right: 10px;
 }
 
 .product-category-details {
@@ -164,29 +158,29 @@ body {
 
 .product-category-details h3 {
   font-size: 1.5rem;
-  margin-bottom: 5px;
 }
 
 .product-category-buttons {
   display: flex;
   flex-direction: column;
-  align-items: flex-end; /* Align buttons to the right */
+  align-items: flex-end; 
 }
 
 .product-category-buttons button {
-  background-color: #3498db;
+  background-color: #EA3837;
   color: #fff;
-  padding: 8px 12px;
+  padding: 5px;
   border: none;
-  border-radius: 4px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  margin-left: 10px;
+  transition: background-color 2s ease;
 
   &:hover {
     background-color: #217dbb;
   }
 
   & + button {
-    margin-top: 10px;
+    margin-top: 5px;
   }
 }

@@ -64,8 +64,37 @@ function ProductManagement() {
       setProductCategories(demoProductCategories);
   }, []);
 
-  const updateCategoryOrder = () => {
-    console.log('update category order');
+  const updateCategoryOrder = async (title, direction) => {
+    let n = productCategories.length;
+    let updatedCategories = [...productCategories];
+
+    for(let i = 0; i < n; i++) {
+      if(productCategories[i]['title'] === title) {
+        if(i && direction === 'up') {
+          let categoryA = {...productCategories[i]};
+          categoryA.category_order -= 1;
+          let categoryB = {...productCategories[i-1]};
+          categoryB.category_order += 1;
+
+          updatedCategories[i-1] = categoryA;
+          updatedCategories[i] = categoryB;
+        }
+        else if(i + 1 < n  && direction === 'down') {
+          let categoryA = {...productCategories[i+1]};
+          categoryA.category_order -= 1;
+          let categoryB = {...productCategories[i]};
+          categoryB.category_order += 1;
+
+          updatedCategories[i] = categoryA;
+          updatedCategories[i+1] = categoryB;
+        }
+      }
+    }
+    setProductCategories(updatedCategories);
+  }
+
+  const saveCategoryOrder = async () => {
+    console.log("save product categories: ", productCategories);
   }
 
   console.log('product Category page is being loaded');
@@ -81,7 +110,7 @@ function ProductManagement() {
           <p>Create Categories</p>
         </div>
 
-        <div className="product-category-card" onClick={updateCategoryOrder}>
+        <div className="product-category-card" onClick={saveCategoryOrder}>
           <i className="fa fa-refresh" aria-hidden="true"></i>
           <p>Update Category Order</p>
         </div>
@@ -90,16 +119,23 @@ function ProductManagement() {
         <div className="product-category-management-container">
             {productCategories && productCategories.map((category) => (
               <div key={category.id} className="product-category-row">
+                <div style={{width: '25px', marginRight:'5px', fontSize: '1.1em'}}>
+                  <span style={{textAlign: 'left'}}>{category.category_order}.</span>
+                </div>
                 <div className="product-category-image">
-                  <img src={category.profile_picture} alt={category.title} />
+                  <img src="https://fabrilife.com/image-gallery/638a77dc9c88d-square.jpg" alt={category.title} />
                 </div>
                 <div className="product-category-details">
                   <h3>{category.title}</h3>
                   <p>{category.description}</p>
                 </div>
                 <div className="product-category-buttons">
-                  <button onClick={() => updateCategoryOrder(category.id, 'up')}>Up</button>
-                  <button onClick={() => updateCategoryOrder(category.id, 'down')}>Down</button>
+                  <button onClick={() => updateCategoryOrder(category.title, 'up')}>
+                    <i class="fa fa-chevron-up" aria-hidden="true"></i>
+                  </button>
+                  <button onClick={() => updateCategoryOrder(category.title, 'down')}>
+                    <i class="fa fa-chevron-down" aria-hidden="true"></i>
+                  </button>
                 </div>
               </div>
             ))}
