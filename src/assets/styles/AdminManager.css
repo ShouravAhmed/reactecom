@@ -11,7 +11,7 @@ body {
     width: 50px;
   }
   
-  .admin-management-container {
+  .admin-manager-container {
     padding: 10px;
     background-color: #fff;
   }
@@ -66,7 +66,6 @@ body {
     overflow: hidden;
   }
   
-
   .adm-btn {
     background-color: #EA3837;
     color: #fff;

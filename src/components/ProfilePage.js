@@ -1,13 +1,11 @@
 import '../assets/styles/ProfilePage.css';
 
-import WishlistIconPink from '../assets/images/wishlist-icon.png';
 import ClockIcon from '../assets/images/clockicon.png';
 import Coin from '../assets/images/coin-icon.png';
 import ProfileIcon from '../assets/images/user-icon.png';
 import CallIcon from '../assets/images/call-icon.png';
 import EmailIcon from '../assets/images/mail-icon.png';
 import AddressIcon from '../assets/images/address-icon.png';
-import RightArrow from '../assets/images/right-arrow-icon.png'
 
 import { AuthContext } from '../contexts/AuthContext';
 
@@ -37,9 +35,8 @@ function ProfilePage() {
   const {userProfile, updateUserProfile, handleUserLogout, showToast} = authData;
   
   const schema = yup.object().shape({
-    full_name: yup
-      .string()
-      .test('at-least-two-words', 'Full Name should contain at least two words', (value) => {
+    full_name: yup.string().test(
+      'at-least-two-words', 'Full Name should contain at least two words', (value) => {
         if (value) {
           const words = value.split(' ').filter((x) => x.length > 0  );
           return words.length >= 2;
@@ -48,8 +45,8 @@ function ProfilePage() {
       })
       .min(4, 'Full Name should be at least 4 characters long.')
       .required('Full Name is required.'),
-    email: yup.string().email('Please provide a valid email.').required('Email is Required.'),
-    address: yup.string().required('Address is required.')
+    email: yup.string().email('Please provide a valid email.'),
+    address: yup.string()
   });
   
   const {register, handleSubmit, formState: {errors}} = useForm({
@@ -98,7 +95,7 @@ function ProfilePage() {
         <div className="profile-container">
           
           <div className="profile-header">
-            <div className="profile-picture" style={{ background: randomBackgroundColor }}>
+            <div className="profile-image" style={{ background: randomBackgroundColor }}>
             <div className="initials">{userProfile.full_name ? userProfile.full_name.split(' ').map(word => word[0]).join('') : 'U'}</div>
             </div>
 
@@ -143,9 +140,9 @@ function ProfilePage() {
             
             <br />            
             <div className="profile-row order-history" onClick={() => navigate('/orderhistory')}>
-              <img src={WishlistIconPink} alt="history" className="icon" />
-              <div className="order-history-text">Order History</div>
-              <img src={RightArrow} alt="Right Icon" className="right-icon" />
+              <i className="fa fa-heart" aria-hidden="true" style={{marginLeft: 15}}></i>
+              <div className="order-history-text" style={{marginLeft: 25}}>Order History</div>
+              <i className="fa fa-chevron-right" aria-hidden="true" style={{textAlign: 'right', marginRight: 15}}></i>
             </div>
 
             <div className="profile-row submit-btn">
@@ -156,16 +153,15 @@ function ProfilePage() {
           <div className="profile-row submit-btn" onClick={()=>{
                 showToast("Logout Successfull. See You Again!"); 
                 handleLogout();
-                return navigate('login', { replace: true });
               }
             }>
             <div className="submit-btn-text">Logout</div>
           </div>
           {userProfile.is_staff && 
-            <div className="profile-row order-history" onClick={() => navigate('/admin-panel', { replace: true })}>
+            <div className="profile-row order-history" onClick={() => navigate('/admin-panel')}>
               <i className="fa fa-cogs" aria-hidden="true" style={{marginLeft: 15}}></i>
               <div className="order-history-text" style={{marginLeft: 25}}>Admin Panel</div>
-              <i className="fa fa-arrow-right" aria-hidden="true" style={{textAlign: 'right', marginRight: 15}}></i>
+              <i className="fa fa-chevron-right" aria-hidden="true" style={{textAlign: 'right', marginRight: 15}}></i>
             </div>
           }
         

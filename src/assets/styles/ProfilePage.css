@@ -10,7 +10,7 @@
     align-items: center; /* Align items vertically */
   }
   
-  .profile-picture {
+  .profile-image {
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -123,7 +123,7 @@
   }
   
   @media (max-width: 768px) {
-    .profile-picture {
+    .profile-image {
       font-size: 1.5rem;
     }
   

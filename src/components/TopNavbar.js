@@ -49,9 +49,9 @@ function TopNavbar() {
           
           <div onClick={() => {
               if(location.pathname !== '/') {
-                navigate('', { replace: true })
+                navigate('');
               }
-            }} className="top-navbar-icon-and-brand">
+            }} className="top-navbar-icon-and-brand"  style={{cursor: 'pointer'}}>
             <img src={BrandLogo} alt="brand" className="top-navbar-brand-icon"/>
             <span className="top-navbar-brand-name">
               <span className="bold">Fabri</span>
@@ -63,7 +63,7 @@ function TopNavbar() {
             if(location.pathname !== '/profile') {
               navigate((userProfile ? "profile" : "login"));
             }
-          }} className="top-navbar-right">
+          }} className="top-navbar-right" style={{cursor: 'pointer'}}>
           {
             userProfile ? (
               <span className="top-navbar-user-username">Hi, {userProfile.full_name ? userProfile.full_name.split(' ')[0].slice(0, 9) : 'User'}</span>

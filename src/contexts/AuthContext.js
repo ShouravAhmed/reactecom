@@ -94,10 +94,13 @@ function AuthProvider({children}) {
 
     localStorage.removeItem('LOCAL_USER_PROFILE');
     localStorage.removeItem('LOCAL_REFRESH_TOKEN');
-
+    localStorage.removeItem('LOCAL_ACCESS_TOKEN');
+    localStorage.removeItem('LOCAL_ACCESS_TOKEN_TIME');
+    
     setAccessToken('');
     setRefreshToken('');
     setUserProfile(null);
+    setAccessTokenTimestamp(0);
   }, []);
 
   const issueAccessToken = async () => {

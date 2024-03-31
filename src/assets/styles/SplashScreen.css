@@ -3,7 +3,11 @@
     align-items: center;
     justify-content: center;
     height: 100vh;
-    background-color: #05B9FC;
+    /*background-color: #05B9FC;*/
+    /*background-color: #FF383A;*/
+    /* background-color: #7900DB; */
+    background-color: rgb(119, 0, 255);
+    /*background-color: #FF217D;*/
     color: #fff;
 
     /* background: linear-gradient(to bottom, #462542, #af5f6c, #e96b55, #fdc153, #46b39b); */

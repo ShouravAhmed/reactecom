@@ -1,4 +1,4 @@
-import '../assets/styles/AdminManagement.css';
+import '../assets/styles/AdminManager.css';
 
 
 import { AuthContext } from '../contexts/AuthContext';
@@ -7,6 +7,11 @@ import React, { useContext, useState, useEffect, useCallback } from 'react';
 
 import { IsValidPassword, IsCorrectPhoneNumber } from '../utils/SecurityUtils';
 
+
+import { DataContext } from '../contexts/DataContext';
+
+
+import { useQuery } from 'react-query'
 import Axios from 'axios';
 
 const axiosInstance = Axios.create({
@@ -31,31 +36,27 @@ function getStaffLevelId(name) {
   return staffLevel ? staffLevel.id : 0;
 }
 
-function AdminManagement() {
+function AdminManager() {
   const { authData } = useContext(AuthContext);
   const {getAccessToken, showToast} = authData;
+
+  const { dataContextData } = useContext(DataContext);
+  const {setIsLoading} = dataContextData;
 
   const [showPopup, setShowPopup] = useState(false);
   const [selectedAdmin, setSelectedAdmin] = useState(null);
   const [updatingAdmin, setUpdatingAdmin] = useState(null);
   const [formWarning, setFormWarning] = useState('');
-  const [adminList, setAdminList] = useState([]);
   
-  const fetchAdminList = useCallback(async () => {
+  const adminListResponse = useQuery('get-admin-list', async () => {
     const token = await getAccessToken();
-    console.log("fetch admin list:", token);
     const config = {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     };
-    const response = await axiosInstance.get("get-admin-list/", config);
-    setAdminList(await response.data.admin_list);
-  }, [getAccessToken]);
-
-  useEffect(() => {
-    fetchAdminList();
-  }, [fetchAdminList]);
+    return axiosInstance.get("get-admin-list/", config);
+  });
 
   const openPopup = (admin) => {
     if(admin) {
@@ -80,6 +81,7 @@ function AdminManagement() {
 
   const updateAdmin = async (admin) => {
     console.log("update admin: ", admin);
+    setIsLoading(true);
 
     const token = await getAccessToken();
     console.log("Token", token);
@@ -87,15 +89,17 @@ function AdminManagement() {
     const config = {
       headers: {
         Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
       },
     };
-    
-    console.log("update-admin/", admin, config);
 
     const response = await axiosInstance.post("update-admin/", admin, config);
-    setAdminList(await response.data.admin_list);
+    setIsLoading(false);
+
     showToast(response.data.toast);
     console.log(response);
+
+    adminListResponse.refetch();
   }
 
   const handleSubmit = async (event) => {
@@ -132,24 +136,30 @@ function AdminManagement() {
     console.log("handle change: ", updatingAdmin);
   }
 
+  if(adminListResponse.isLoading) {
+    setIsLoading(true);
+  }
+  else {
+    setIsLoading(false);
+  }
+
   return (
-    <div className="admin-management-container">
+    <div className="admin-manager-container">
 
       <div className='title-row'>
           <h1 className='item' style={{fontSize: '24px'}}>Admin Management</h1>
           <button onClick={() => openPopup(null)} className="adm-btn">Add Admin</button>
       </div>
 
-      <div className='admin-row-container'>
-      {adminList && adminList.map((admin) => (
-        <div className="admin-row" key={admin.phone_number}>
-          <i className="fa fa-hashtag" aria-hidden="true"></i>
-          <p className='item' style={{fontWeight: 600}}>{admin.phone_number}</p>
-          <p className='item'>{admin.full_name}</p>
-          <p className='item' style={{color: '#EA3837', fontWeight: 600}}>{getStaffLevelName(admin.staff_level)}</p>
-          <button onClick={() => openPopup(admin)} className="adm-btn">Update</button>
-        </div>
-      ))}
+      <div className='admin-row-container'>  
+        {!adminListResponse.isLoading && adminListResponse.data.data.admin_list.map((admin) => (
+          <div className="admin-row" key={admin.phone_number} onClick={() => openPopup(admin)} style={{cursor: 'pointer'}}>
+            <i className="fa fa-hashtag" aria-hidden="true"></i>
+            <p className='item' style={{fontWeight: 600}}>{admin.phone_number}</p>
+            <p className='item'>{admin.full_name}</p>
+            <p className='item' style={{color: '#EA3837', fontWeight: 600}}>{getStaffLevelName(admin.staff_level)}</p>
+          </div>
+        ))}
       </div>      
 
       {showPopup && (
@@ -224,4 +234,4 @@ function AdminManagement() {
   );
 }
 
-export default React.memo(AdminManagement);
+export default React.memo(AdminManager);

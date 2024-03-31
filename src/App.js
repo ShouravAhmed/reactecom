@@ -7,12 +7,20 @@ import Home from './components/Home';
 import SplashScreen from './components/SplashScreen';
 
 import AuthProvider from './contexts/AuthContext';
+import DataProvider from './contexts/DataContext';
+
 import { PrivateOutlet } from './containers/PrivateOutlet';
 import { AdminOutlet } from './containers/AdminOutlet';
 import AdminDashboard from './components/AdminDashboard';
-import AdminManagement from './components/AdminManagement';
-import ProductManagement from './components/ProductManagement';
-import ProductCategories from './components/ProductCategories';
+import AdminManager from './components/AdminManager';
+import ProductDashboard from './components/ProductDashboard';
+import ProductCategoryManager from './components/ProductCategoryManager';
+import UpdateProductCategory from './components/UpdateProductCategory';
+import ProductSizeChart from './components/ProductSizeChart'
+import ProductDescription from './components/ProductDescription';
+import BannerManager from './components/BannerManager';
+import ProductManager from './components/ProductManager';
+import SearchManager from './components/SearchManager';
 
 import ProfilePage from './components/ProfilePage';
 import Login from './components/Login';
@@ -20,6 +28,9 @@ import { NotFound } from './components/NotFound';
 
 import BrandLogoNameWhite from './assets/images/fabricraft-logo-name-white.png';
 
+import { QueryClient, QueryClientProvider } from 'react-query'
+
+const queryClient = new QueryClient()
 
 
 function App() {
@@ -33,7 +44,7 @@ function App() {
     setIsSplashVisible(true);
     setTimeout(() => {
       setIsSplashVisible(false);
-    }, 2800);
+    }, 3000);
   }, []);
 
   if(isSplashVisible) {
@@ -41,39 +52,50 @@ function App() {
   }
 
   return (
-    <div className="App">
-      <AuthProvider>
-        <Router>
-          <TopNavbar/>
+    <QueryClientProvider client={queryClient}>
+      <div className="App">
+        <AuthProvider>
+          <DataProvider>
+            <Router>
+              <TopNavbar/>
 
-          <Routes>
-            <Route path='/' element={<Home/>} exact/>
+              <Routes>
+                <Route path='/' element={<Home/>} exact/>
+                <Route path='/search' element={<SearchManager/>} exact/>
 
-            <Route path='/' element={<PrivateOutlet/>}>
-              <Route path='profile' element={<ProfilePage/>}/>
-            </Route>
+                <Route path='/' element={<PrivateOutlet/>}>
+                  <Route path='profile' element={<ProfilePage/>}/>
+                </Route>
 
-            <Route path='admin-panel/' element={<AdminOutlet/>}>
-              <Route path='' element={<AdminDashboard/>}/>
-              
-              <Route path='admin-management' element={<AdminManagement/>}/>
-              <Route path='product-management' element={<ProductManagement/>}/>
-              
-              <Route path='product-management/categories' element={<ProductCategories/>}/>
-              
-              <Route path='order-management' element={<AdminDashboard/>}/>
-              <Route path='user-management' element={<AdminDashboard/>}/>
-              <Route path='accounce-management' element={<AdminDashboard/>}/>
-            </Route>
+                <Route path='admin-panel/' element={<AdminOutlet/>}>
+                  <Route path='' element={<AdminDashboard/>}/>
+                  
+                  <Route path='admin-manager' element={<AdminManager/>}/>
 
-            <Route path='/login' element={<Login/>}/>
-            <Route path='*' element={<NotFound/>}/>
-          </Routes>
+                  <Route path='product-dashboard' element={<ProductDashboard/>}/>
+                  <Route path='product-dashboard/categories/' element={<ProductCategoryManager/>}/>
+                  <Route path='product-dashboard/categories/:slug' element={<UpdateProductCategory/>}/>
+                  <Route path='product-dashboard/categories/:slug/size-chart' element={<ProductSizeChart/>}/>
+                  <Route path='product-dashboard/categories/:slug/description' element={<ProductDescription/>}/>
+                  <Route path='product-dashboard/banner' element={<BannerManager/>}/>
+                  
+                  <Route path='product-dashboard/product-manager' element={<ProductManager/>}/>
 
-          <BottomNavbar/>
-        </Router>
-      </AuthProvider>
-    </div>
+                  <Route path='order-manager' element={<AdminDashboard/>}/>
+                  <Route path='user-manager' element={<AdminDashboard/>}/>
+                  <Route path='accounce-manager' element={<AdminDashboard/>}/>
+                </Route>
+
+                <Route path='/login' element={<Login/>}/>
+                <Route path='*' element={<NotFound/>}/>
+              </Routes>
+
+              <BottomNavbar/>
+            </Router>
+          </DataProvider>
+        </AuthProvider>
+      </div>
+    </QueryClientProvider>
   );
 }
 
