@@ -93,9 +93,13 @@ function AuthProvider({children}) {
     console.log('logout');
 
     localStorage.removeItem('LOCAL_USER_PROFILE');
+
     localStorage.removeItem('LOCAL_REFRESH_TOKEN');
     localStorage.removeItem('LOCAL_ACCESS_TOKEN');
     localStorage.removeItem('LOCAL_ACCESS_TOKEN_TIME');
+
+    localStorage.removeItem('LOCAL_CARTLIST');
+    localStorage.removeItem('LOCAL_WISHLIST'); 
     
     setAccessToken('');
     setRefreshToken('');
@@ -137,7 +141,12 @@ function AuthProvider({children}) {
     console.log('getAccessToken');
 
     if (!refreshToken) {
-      handleUserLogout();
+      const localRefreshToken = localStorage.getItem('LOCAL_REFRESH_TOKEN');
+      console.log("localRefreshToken:", localRefreshToken);
+      
+      if(localRefreshToken === false) {
+        handleUserLogout();
+      }
       return null;
     }
     const tenMinutesAgo = new Date(Date.now());

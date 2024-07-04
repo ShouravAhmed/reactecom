@@ -26,7 +26,7 @@ function ProductSizeChart() {
   const {getAccessToken, showToast} = authData;
 
   const { dataContextData } = useContext(DataContext);
-  const {getProductCategories, updateProductCategories, setIsLoading} = dataContextData;
+  const { setIsLoading } = dataContextData;
 
   const [showPopup, setShowPopup] = useState(false);
 

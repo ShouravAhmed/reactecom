@@ -407,8 +407,6 @@ body {
 
 .product-size-chart-table {
   flex: 1;
-  overflow-x: auto;
-  margin: 10px;
 }
 
 .product-size-chart-table table {

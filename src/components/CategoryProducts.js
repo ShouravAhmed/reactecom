@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
-import { debounce } from 'lodash';
+import React, { useState, useEffect } from "react";
 
 import Axios from 'axios';
 import { useQuery } from 'react-query';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 import { Image } from "./Image";
 
@@ -12,76 +11,63 @@ const axiosInstance = Axios.create({
   baseURL: "http://127.0.0.1:8000/api/",
 });
 
-function SearchManager() {  
+function CategoryProducts() {  
   const navigate = useNavigate();
 
-  const [productList, setProductList] = useState([]);
-  const [searchBoxText, setSearchBoxText] = useState("");
+  const { state } = useLocation();
+  const [categoryProductList, setCategoryProductList] = useState([]);
   const [searchOnGoing, setSearchOnGoing] = useState(false);
 
-  const delayedSearchRef = useRef(null);
- 
-  const searchProducts = async (searchText) => {
-    console.log("searching for:", searchText);
+  const fetchCategoryProducts = async (slug) => {
     try{
       setSearchOnGoing(true);
-      const response = await axiosInstance.get(`product/search/?search=${searchText}`);
-      if(response.data) {
-        setProductList(response.data);
-      }
+      const response = await axiosInstance.get(`product/product/category/${slug}/`);
+      setCategoryProductList(response.data);
       setSearchOnGoing(false);
     }
     catch (e) {
       setSearchOnGoing(false);
-      console.log("Exception:", e);
+      console.log("exception: ", e);
     }
   }
 
   useEffect(() => {
-    if (!delayedSearchRef.current) {
-      delayedSearchRef.current = debounce((searchText) => {
-        searchProducts(searchText);
-      }, 600);
+    if(categoryProductList && categoryProductList.length > 0) {
+      localStorage.setItem(`LOCAL_CATEGORY_PRODUCTS_${state.slug}`, JSON.stringify(categoryProductList));
     }
-    return () => {
-      delayedSearchRef.current.cancel();
-    };
-  }, []); 
-
-  const handleInputChange = (e) => {
-    const searchText = e.target.value;
-    setSearchBoxText(searchText);
-    delayedSearchRef.current(searchText); 
-  };
-
+  }, [categoryProductList]);
+  
   useEffect(() => {
-    setSearchOnGoing(false);
+    const categoryProducts = localStorage.getItem(`LOCAL_CATEGORY_PRODUCTS_${state.slug}`);
+    if(categoryProducts) {
+      setCategoryProductList(JSON.parse(categoryProducts));
+    }
   }, []);
 
+  useEffect(() => {
+    fetchCategoryProducts(state.slug);
+  }, [state]);
 
-  console.log('search manager loaded');
+
+  console.log('Category Produts loaded');
 
   return (
     <div className="homepage-container">
 
-        <div className="search-input-bar">
-            <i className="fa fa-search search-input-icon" aria-hidden="true"></i>
-            <input
-                type="text"
-                className="search-input"
-                placeholder="Search For Products"
-                value={searchBoxText}
-                onChange={handleInputChange}
-            />
-        </div>
+      <Link to="/search" className="search-bar">
+        <button className="search-button">
+          <i className="fa fa-search" aria-hidden="true"></i>
+          Search For Products
+        </button>
+      </Link>
 
-        {searchOnGoing && (<div class="lds-ripple"><div></div><div></div></div>)}
+      {searchOnGoing && (<div class="lds-ripple"><div></div><div></div></div>)}
 
         <div className="search-product-card-container"> 
-        {(productList && productList.length > 0) ? 
-            productList.map((product) => {
+        {(categoryProductList && categoryProductList.length > 0) && 
+            categoryProductList.map((product) => {
                 return (
-                    <div className="search-product-card" onClick={() => {navigate('/product-page', {'state':product})}}>
+                    <div className="search-product-card" key={product.id} onClick={() => {navigate('/product-page', {'state':product})}}>
                         <div className="search-product-image">
                           <Image 
                             imageUrl={'http://127.0.0.1:8000/' + product.profile_image}
@@ -102,8 +88,7 @@ function SearchManager() {
                         </div>
                     </div>
                 );
-            }) :
-            (<div className="no-product-found">Searched Products</div>)
+            })
         }
         </div>
         
@@ -112,4 +97,4 @@ function SearchManager() {
   );
 }
 
-export default SearchManager;
+export default CategoryProducts;

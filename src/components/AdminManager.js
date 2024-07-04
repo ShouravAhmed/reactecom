@@ -3,7 +3,7 @@ import '../assets/styles/AdminManager.css';
 
 import { AuthContext } from '../contexts/AuthContext';
 
-import React, { useContext, useState, useEffect, useCallback } from 'react';
+import React, { useContext, useState } from 'react';
 
 import { IsValidPassword, IsCorrectPhoneNumber } from '../utils/SecurityUtils';
 
@@ -40,7 +40,7 @@ function AdminManager() {
   const { authData } = useContext(AuthContext);
   const {getAccessToken, showToast} = authData;
 
-  const { dataContextData } = useContext(DataContext);
+  const {dataContextData}  = useContext(DataContext);
   const {setIsLoading} = dataContextData;
 
   const [showPopup, setShowPopup] = useState(false);

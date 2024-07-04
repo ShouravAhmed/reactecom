@@ -8,6 +8,7 @@ import EmailIcon from '../assets/images/mail-icon.png';
 import AddressIcon from '../assets/images/address-icon.png';
 
 import { AuthContext } from '../contexts/AuthContext';
+import { DataContext } from '../contexts/DataContext';
 
 import React, { useState, useContext } from 'react';
 import {useNavigate } from 'react-router-dom';
@@ -15,6 +16,8 @@ import {useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import {yupResolver} from '@hookform/resolvers/yup'
+
+import { useQueryClient } from 'react-query';
 
 
 function getRandomBackgroundColor() {
@@ -33,6 +36,11 @@ function ProfilePage() {
 
   const { authData } = useContext(AuthContext);
   const {userProfile, updateUserProfile, handleUserLogout, showToast} = authData;
+
+  const {dataContextData}  = useContext(DataContext);
+  const { setCartItemCount, setWishlistItemCount } = dataContextData;
+
+  const queryClient = useQueryClient();
   
   const schema = yup.object().shape({
     full_name: yup.string().test(
@@ -88,6 +96,11 @@ function ProfilePage() {
   const handleLogout = () => {
     console.log("Logout successfull");
     handleUserLogout();
+
+    queryClient.clear();
+
+    setCartItemCount(0);
+    setWishlistItemCount(0);
   }
 
   return (
@@ -111,7 +124,7 @@ function ProfilePage() {
               <div className="user-points">
                 <img src={Coin} alt="Gold Coin Icon" className="gold-coin" />
                 <div className="total-points">{userProfile.points}</div>
-                <div className="points-text">points</div>
+                <div className="points-text">coins</div>
               </div>
             </div>
           </div>

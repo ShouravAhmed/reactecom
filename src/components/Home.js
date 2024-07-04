@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import { Blurhash } from "react-blurhash";
 
 import PoloShirtIcon from '../assets/images/polo.png';
@@ -18,6 +18,8 @@ import BannerSlider from "./BannerSlider";
 
 import { useNavigate } from 'react-router-dom';
 
+import { AuthContext } from '../contexts/AuthContext';
+
 
 const axiosInstance = Axios.create({
   baseURL: "http://127.0.0.1:8000/api/",
@@ -25,6 +27,9 @@ const axiosInstance = Axios.create({
 
 function Home() {
   const navigate = useNavigate();
+
+  const { authData } = useContext(AuthContext);
+  const { getAccessToken, } = authData;
 
   const [banners, setBanners] = useState([]);
   const BannersResponse = useQuery(`banners`, async () => {
@@ -87,7 +92,157 @@ function Home() {
       setHomePageProducts(JSON.parse(localHomePageProducts));
     }
   }, []);
+
+  function arraysAreEqual(arr1, arr2) {
+    if (arr1.length !== arr2.length) return false;
+    for (let i = 0; i < arr1.length; i++) {
+        if (JSON.stringify(arr1[i]) !== JSON.stringify(arr2[i])) {
+            return false;
+        }
+    }
+    return true;
+  }
   
+  const WishListProductsResponse = useQuery(`wishlist-products`, async () => {
+    try{
+      const token = await getAccessToken();
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      return axiosInstance.get('product/wishlist/', config);
+    }
+    catch(e) {
+      return {'data':[]};
+    }
+  }, { 
+    staleTime: (60) * (60 * 1000),
+    cacheTime: (6 * 60) * (60 * 1000),
+  });
+
+  const saveUnsavedWishlistItems = useCallback(async (wishlist) => {
+    console.log('wishlist saveUnsavedWishlistItems:', wishlist);
+
+    const unsavedWishlistItems = [];
+    const savedWishlistItems = [];
+    for (const item of wishlist) {
+      if (!item.id) {
+        unsavedWishlistItems.push(item.product.product_id);
+      }
+      else {
+        savedWishlistItems.push(item.product);
+      }
+    }
+    
+    console.log('wishlist unsavedWishlistItems:', unsavedWishlistItems);
+    if(!unsavedWishlistItems || unsavedWishlistItems.length === 0) {
+      return;
+    }
+    
+    try {
+      const token = await getAccessToken();
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      
+      const res = await axiosInstance.post('product/wishlist/batch-add/',
+        {'wishlist':unsavedWishlistItems,}, 
+        config
+      );
+      console.log("batch wishlist save response:", res);
+
+      if(res.data.status === 'OK') {
+        localStorage.setItem('LOCAL_WISHLIST', JSON.stringify(savedWishlistItems));
+        WishListProductsResponse.refetch();
+      }
+    }
+    catch(e) {
+      console.log("exception:", e);
+    }
+  }, [getAccessToken]);
+
+  useEffect(() => {
+    const localWishlist = JSON.parse(localStorage.getItem('LOCAL_WISHLIST'));
+    console.log("localWishlist inited:", localWishlist);
+
+    if(localWishlist && localWishlist.length > 0) {
+      saveUnsavedWishlistItems(localWishlist);
+    }
+  }, [saveUnsavedWishlistItems]);
+  
+
+  const CartProductsResponse = useQuery(`cart-products`, async () => {
+    try{
+      const token = await getAccessToken();
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      return axiosInstance.get('product/cart/', config);
+    }
+    catch(e) {
+      return {'data':[]};
+    }
+  }, { 
+    staleTime: (60) * (60 * 1000),
+    cacheTime: (6 * 60) * (60 * 1000),
+  });
+
+  const saveUnsavedCartItems = useCallback(async (cartItems) => {
+    console.log('cartItems saveUnsavedCartItems:', cartItems);
+
+    const unsavedCartItems = [];
+    const savedCartItems = [];
+    for (const item of cartItems) {
+      if (!item.id) {
+        unsavedCartItems.push(item);
+      }
+      else {
+        savedCartItems.push(item);
+      }
+    }
+    
+    console.log('cartItems unsavedCartItems:', unsavedCartItems);
+    if(!unsavedCartItems || unsavedCartItems.length === 0) {
+      return;
+    }
+    
+    try {
+      const token = await getAccessToken();
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      
+      const res = await axiosInstance.post('product/cart/batch-add/',
+        {'cart':unsavedCartItems,}, 
+        config
+      );
+      console.log("batch cart save response:", res);
+      
+      if(res.data.status === 'OK') {
+        localStorage.setItem('LOCAL_CARTLIST', JSON.stringify(savedCartItems));
+        CartProductsResponse.refetch();
+      }
+    }
+    catch(e) {
+      console.log("exception:", e);
+    }
+  }, [getAccessToken]);
+
+  useEffect(() => {
+    const localCartlist = JSON.parse(localStorage.getItem('LOCAL_CARTLIST'));
+    console.log("localCartlist inited:", localCartlist);
+
+    if(localCartlist && localCartlist.length > 0) {
+      saveUnsavedCartItems(localCartlist);
+    }
+  }, [saveUnsavedCartItems]);
   
   return (
     <div className="homepage-container">
@@ -147,7 +302,7 @@ function Home() {
             <div className="category-product-list" key={category.id}>
               <div className="category-description"> 
                 <h2 className="category-title">{category.title}</h2>
-                <div className="category-cover">
+                <div className="category-cover" onClick={() => navigate('category-products', {state: category})}>
                   <Image 
                     imageUrl={'http://127.0.0.1:8000/' + category.cover_image}
                     altText={category.title}
@@ -165,7 +320,7 @@ function Home() {
                   category.two_in_a_row ?
                   (category.title in homePageProducts) && homePageProducts[category.title]?.slice(0, 4).map((product) => {
                     return (
-                        <div className="product-two-card">
+                        <div className="product-two-card" onClick={() => {navigate('/product-page', {'state':product})}}>
                           <div className="product-two-image">
                             <Image 
                               imageUrl={'http://127.0.0.1:8000/' + product.profile_image}
@@ -189,7 +344,7 @@ function Home() {
                   }) : (
                   category.title in homePageProducts) && homePageProducts[category.title]?.map((product) => {
                     return(
-                      <div className="product-three-card">
+                      <div className="product-three-card" onClick={() => {navigate('/product-page', {'state':product})}}>
                         <div className="product-three-image">
                           <Image 
                             imageUrl={'http://127.0.0.1:8000/' + product.profile_image}

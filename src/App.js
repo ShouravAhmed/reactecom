@@ -21,6 +21,12 @@ import ProductDescription from './components/ProductDescription';
 import BannerManager from './components/BannerManager';
 import ProductManager from './components/ProductManager';
 import SearchManager from './components/SearchManager';
+import CategoryProducts from './components/CategoryProducts';
+import CategoriesPage from './components/CategoriesPage';
+import WishListPage from './components/WishListPage';
+import CartPage from './components/CartPage';
+
+import ProductPage from './components/ProductPage';
 
 import ProfilePage from './components/ProfilePage';
 import Login from './components/Login';
@@ -62,6 +68,13 @@ function App() {
               <Routes>
                 <Route path='/' element={<Home/>} exact/>
                 <Route path='/search' element={<SearchManager/>} exact/>
+                <Route path='/category-products' element={<CategoryProducts/>} exact/>
+                <Route path='/categories' element={<CategoriesPage/>} exact/>
+
+                <Route path='/product-page' element={<ProductPage/>} exact/>
+
+                <Route path='/wishlist' element={<WishListPage/>} exact/>
+                <Route path='/cart' element={<CartPage/>} exact/>
 
                 <Route path='/' element={<PrivateOutlet/>}>
                   <Route path='profile' element={<ProfilePage/>}/>

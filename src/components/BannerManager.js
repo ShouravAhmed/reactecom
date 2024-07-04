@@ -24,9 +24,6 @@ function BannerManager() {
   const { authData } = useContext(AuthContext);
   const {getAccessToken, showToast} = authData;
 
-  const { dataContextData } = useContext(DataContext);
-  const {setIsLoading} = dataContextData;
-
   const [bannerList, setBannerList] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
 
