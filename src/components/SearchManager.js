@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react";
 import { debounce } from 'lodash';
 
 import Axios from 'axios';
@@ -8,12 +8,17 @@ import { useNavigate } from 'react-router-dom';
 
 import { Image } from "./Image";
 
+import { AuthContext } from '../contexts/AuthContext';
+
 const axiosInstance = Axios.create({
   baseURL: "http://127.0.0.1:8000/api/",
 });
 
 function SearchManager() {  
   const navigate = useNavigate();
+
+  const { authData } = useContext(AuthContext);
+  const { showToast } = authData;
 
   const [productList, setProductList] = useState([]);
   const [searchBoxText, setSearchBoxText] = useState("");
@@ -25,9 +30,15 @@ function SearchManager() {
     console.log("searching for:", searchText);
     try{
       setSearchOnGoing(true);
-      const response = await axiosInstance.get(`product/search/?search=${searchText}`);
-      if(response.data) {
-        setProductList(response.data);
+      try{
+        const response = await axiosInstance.get(`product/search/?search=${searchText}`);
+        if(response.data) {
+          setProductList(response.data);
+        }
+      }
+      catch (e) {
+        console.log("Exception:", e);
+        showToast("Your internet connection may not stable!");
       }
       setSearchOnGoing(false);
     }

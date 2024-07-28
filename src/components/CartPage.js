@@ -20,10 +20,10 @@ function CartPage() {
   const navigate = useNavigate();
 
   const { authData } = useContext(AuthContext);
-  const { getAccessToken, } = authData;
+  const { getAccessToken, showToast } = authData;
 
   const {dataContextData}  = useContext(DataContext);
-  const { setCartItemCount } = dataContextData;
+  const { setCartItemCount, setWishlistItemCount } = dataContextData;
   
   function arraysAreEqual(arr1, arr2) {
     if (arr1.length !== arr2.length) return false;
@@ -35,8 +35,63 @@ function CartPage() {
     return true;
   }
 
+  const [cartOperationOngoing, setCartOperationOngoing] = useState(false);  
 
+  // -----------------------------------------------------------------
+  // wishlist codeblock
+  // -----------------------------------------------------------------
+  const WishListProductsResponse = useQuery(`wishlist-products`, async () => {
+    try{
+      const token = await getAccessToken();
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      return axiosInstance.get('product/wishlist/', config);
+    }
+    catch(e) {
+      return {'data':[]};
+    }
+  }, { 
+    staleTime: (60) * (60 * 1000),
+    cacheTime: (6 * 60) * (60 * 1000),
+  });
   
+  useEffect(() => {
+    try{
+      if(WishListProductsResponse.data && WishListProductsResponse.data.data && WishListProductsResponse.data.data.length > 0) {
+        
+        const remoteWishList = WishListProductsResponse.data.data;
+        const localWishList =  JSON.parse(localStorage.getItem('LOCAL_WISHLIST'));
+
+        const productListMap = {};
+        for(const item of remoteWishList) {
+          if(item.product.product_id) {
+            productListMap[item.product.product_id] = true;
+          }
+        }
+        const unsavedItems = [];
+        for (const item of localWishList) {
+          if(!item.id) {
+            if(!(item.product.product_id in productListMap)) {
+              unsavedItems.push(item);
+            }
+          }
+        }
+        const updatedWishlist = [...remoteWishList, ...unsavedItems];
+        
+        if(!arraysAreEqual(updatedWishlist, localWishList)) {
+          localStorage.setItem('LOCAL_WISHLIST', JSON.stringify(updatedWishlist));
+          setWishlistItemCount(updatedWishlist.length);
+        }
+      }
+    }
+    catch(e) {
+      console.log("Exception:", e);
+    }
+  }, [WishListProductsResponse.data]);
+
   // -----------------------------------------------------------------
   // -----------------------------------------------------------------
   // Cart Related Operations
@@ -63,17 +118,9 @@ function CartPage() {
   });
   
   const saveUnsavedCartItems = useCallback(async (cartItems) => {
-    console.log('cartItems saveUnsavedCartItems:', cartItems);
+    console.log('=>> cart : unsaved items:', cartItems);
 
-    const unsavedCartItems = [];
-    for (const item of cartItems) {
-      if (!item.id) {
-        unsavedCartItems.push(item);
-      }
-    }
-    
-    console.log('cartItems unsavedCartItems:', unsavedCartItems);
-    if(!unsavedCartItems || unsavedCartItems.length === 0) {
+    if(!cartItems || cartItems.length === 0) {
       return;
     }
     
@@ -85,10 +132,13 @@ function CartPage() {
         },
       };
       
-      await axiosInstance.post('product/cart/batch-add/',
-        {'cart':unsavedCartItems,}, 
+      const res = await axiosInstance.post('product/cart/batch-add/',
+        {'cart':cartItems,}, 
         config
       );
+      console.log("=>> cart : save unsaved item : respose : ", res);
+
+      console.log("=>> cart : CartProductsResponse refatching");
       CartProductsResponse.refetch();
     }
     catch(e) {
@@ -96,12 +146,55 @@ function CartPage() {
     }
   }, [getAccessToken, CartProductsResponse]);
 
+
+  const revalidateCart = async () => {
+    try {
+      const token = await getAccessToken();
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const res = await axiosInstance.get('product/cart/revalidate/', config);
+      console.log("=>> cart: revalidate response: ", res);
+      
+      const revalidateResponse = await res.data;
+      if(!revalidateResponse) return false;
+  
+      if(revalidateResponse.is_updated || revalidateResponse.is_deleted) 
+      {
+        if(revalidateResponse.is_deleted) 
+        {
+          showToast("Stockout items are removed from yout Cart!! \nAdding them into your wishlist.");
+        }
+        else 
+        {
+          showToast(`Cart Updated!! \nItems are going to Stockout!!`);
+        }
+  
+        console.log('=>> cart : refatching wishlist and cartlist');
+  
+        WishListProductsResponse.refetch();
+        CartProductsResponse.refetch();
+  
+        return true;
+      }
+      return false;
+    }
+    catch(e) {
+      console.log("Exception:", e);
+      if (e.code === 'ERR_NETWORK') {
+        showToast("Your internet connection may not stable!");
+        return true;
+      }
+      return false;
+    }
+  }
+
   const populateCartProducts = useCallback(async (cartItems) => {
     if (!cartInitiated || isUpdatingCartItem) return;
     
-    console.log("populateCartProducts:");
-    console.log("candidate cartProducts:", cartItems);
-    console.log("cartProducts:", cartProducts);
+    console.log("=>> Populate Cart Products:", cartItems);
 
     const cartProductsMap = {};
     for (const item of cartItems) {
@@ -114,23 +207,54 @@ function CartPage() {
     for (const item of cartProducts) {
       if(!item.id) {
         if(!((item.product.product_id + item.size) in cartProductsMap)) {
-          unsavedItems.push(item);
+          let updatedItem = {...item, };
+          if('product_stock' in updatedItem.product) {
+            updatedItem.count = Math.min(updatedItem.count, updatedItem.product.product_stock[updatedItem.size]);
+          }
+          unsavedItems.push(updatedItem);
         }
       }
     }
+    
     const updatedCartlist = [...cartItems, ...unsavedItems];
+    const isItemsStockout = false;
 
-    console.log('cartlist unsavedItems:', unsavedItems);
-    console.log("cartlist updatedCartlist:", updatedCartlist);
+    for(let i = 0; i < updatedCartlist.length; i++) {
+      if('product_stock' in updatedCartlist[i].product) {
+        if(updatedCartlist[i].count > updatedCartlist[i].product.product_stock[updatedCartlist[i].size]) {
+          
+          console.log(`=>> cart : name: ${updatedCartlist[i].product.product_name} size: ${updatedCartlist[i].size} quantity: ${updatedCartlist[i].count}`);
+          console.log(`=>> cart : available quantity: ${updatedCartlist[i].product.product_stock[updatedCartlist[i].size]}`);
+          
+          updatedCartlist[i].count = updatedCartlist[i].product.product_stock[updatedCartlist[i].size];
+          if(updatedCartlist[i].count === 0) {
+            isItemsStockout = true;
+          }
+          else {
+            unsavedItems.push(updatedCartlist[i]);
+          }
+        }
+      }
+    }
+
+    console.log('=>> cart : unsavedItems:', unsavedItems);
+    console.log("=>> cart : updatedCartlist:", updatedCartlist);
 
     if (!arraysAreEqual(cartProducts, updatedCartlist)) {
+        console.log("=>> cart product list has been updated\n");
+
         localStorage.setItem('LOCAL_CARTLIST', JSON.stringify(updatedCartlist));
         setCartProducts(updatedCartlist);
     } 
     else {
         console.log("cartProducts and updatedCartlist are identical.");
     }
-    saveUnsavedCartItems(updatedCartlist);
+    if(unsavedItems && unsavedItems.length > 0) {
+      saveUnsavedCartItems(unsavedItems);
+    }
+    if(isItemsStockout) {
+      revalidateCart();
+    }
   }, [cartProducts, saveUnsavedCartItems, cartInitiated]);
 
 
@@ -147,15 +271,27 @@ function CartPage() {
     catch(e) {
       console.log("Exception:", e);
     }
-  }, [CartProductsResponse, populateCartProducts]);
+  }, [CartProductsResponse.data, populateCartProducts]);
 
   useEffect(() => {
     const localCartlist = JSON.parse(localStorage.getItem('LOCAL_CARTLIST'));
-    console.log("localCartlist inited:", localCartlist);
-
+    
     if(localCartlist && localCartlist.length > 0) {
+      console.log("localCartlist inited:", localCartlist);
       setCartProducts(localCartlist);
+      
+      let stockIsLow = false;
+      for(const cartItem of localCartlist) {
+        if(cartItem.count + 5 >= cartItem.product.product_stock[cartItem.size]) {
+          stockIsLow = true;  
+        }
+      }
+      if(stockIsLow) {
+        showToast(`Some of your cart item is going to stockout!! \nPlease Confirm Your Order!!`);
+        revalidateCart();
+      }
     }
+
   }, []);
 
   const removeProductFromRemoteCart = async (cartItem) => {
@@ -228,18 +364,33 @@ function CartPage() {
     }
   }
 
-  const updateCartItemCount = async (cartItem, change) => {
+  const updateCartItemQuantity = async (cartItem, change) => {
     const updatedCartProducts = [...cartProducts];
     
-    for(var idx = 0; idx < updatedCartProducts.length; idx += 1) {
+    for(let idx = 0; idx < updatedCartProducts.length; idx += 1) {
       if((updatedCartProducts[idx].product.product_id + updatedCartProducts[idx].size) === (cartItem.product.product_id + cartItem.size)) {
         
-        var count = updatedCartProducts[idx].count;
-        updatedCartProducts[idx].count = Math.min(Math.max(updatedCartProducts[idx].count + change, 1), 10);
-        
-        console.log("updateCartItemCount: ", updatedCartProducts);
+        const currentQuantityInCart = parseInt(updatedCartProducts[idx].count);
+        console.log("=>> cart : current quantity: ", currentQuantityInCart);
 
-        if(count !== updatedCartProducts[idx].count) {
+        let availableProducts = 10;
+        if('product_stock' in updatedCartProducts[idx].product) {
+          availableProducts = Math.min(parseInt(updatedCartProducts[idx].product.product_stock[cartItem.size]), 10);
+        }
+        console.log("=>> cart : availableProducts:", availableProducts);
+        
+        let updatedCount = Math.max(currentQuantityInCart + change, 1);
+        console.log("=>> cart : updated quantity: ", updatedCount);
+
+        updatedCount = Math.min(updatedCount, availableProducts);
+        console.log("=>> cart : updated quantity: ", updatedCount);
+
+        updatedCartProducts[idx].count = updatedCount;
+
+        console.log("updateCartItemQuantity: ", updatedCartProducts);
+
+        if(currentQuantityInCart !== updatedCartProducts[idx].count) {
+          localStorage.setItem('LOCAL_CARTLIST', JSON.stringify(updatedCartProducts));
           setCartProducts(updatedCartProducts);
           updateRemoteCartItemCount(updatedCartProducts[idx]);
         }
@@ -304,10 +455,21 @@ function CartPage() {
       setCouponDiscount(null);
       return;
     }
+    if(!coupon || coupon.length == 0) return;
 
-    const res = await axiosInstance.get(`marketing/offer/validate-coupon/${coupon}/`);
-    console.log('cart : applyCoupon =>', res.data);
-    setCouponDiscount(res.data);
+    try{
+      setCartOperationOngoing(true);
+      const res = await axiosInstance.get(`marketing/offer/validate-coupon/${coupon}/`);
+      console.log('cart : applyCoupon =>', res.data);
+      setCouponDiscount(res.data);
+    }
+    catch (e) {
+      console.log("Exception: ", e);
+      if (e.code === 'ERR_NETWORK') {
+        showToast("Your internet connection may not stable!");
+      }
+    }
+    setCartOperationOngoing(false);
   }
 
   const applyCoin = (coin) => {
@@ -413,6 +575,15 @@ function CartPage() {
     applyCoin(coinAmount);
   };
 
+  const cartNextButtonClicked = async () => {
+    setCartOperationOngoing(true);
+    const isUpdated = await revalidateCart();
+    setCartOperationOngoing(false);
+
+    if(!isUpdated) {
+      navigate('/checkout');
+    }
+  }
 
   // -----------------------------------------------------------------
   // -----------------------------------------------------------------
@@ -498,12 +669,12 @@ function CartPage() {
                 <div className="cart-count-container">
                   <button className="cart-count-button" onClick={(event) => {
                     event.stopPropagation();
-                    updateCartItemCount(cartItem, -1);
+                    updateCartItemQuantity(cartItem, -1);
                   }}>-</button>
                   <span className="cart-count">{cartItem.count}</span>
                   <button className="cart-count-button" onClick={(event) => {
                     event.stopPropagation();
-                    updateCartItemCount(cartItem, 1);
+                    updateCartItemQuantity(cartItem, 1);
                   }}>+</button>
                 </div>
               </div>
@@ -630,16 +801,18 @@ function CartPage() {
           </div>
         </div>
 
+        {cartOperationOngoing && (<div class="lds-ripple loading-fixed-bar"><div></div><div></div></div>)}
+
         <div className="gamify-purchase-fixed-bar">
           <span>{gamifyPurchase()}</span>
         </div>
 
-        <div className="cart-fixed-bar-container" style={{fontSize: "1em"}}>
+        <div onClick={() => cartNextButtonClicked()} className="cart-fixed-bar-container" style={{fontSize: "1em"}}>
           <span>
             Total Price - ৳{calculateTotalPrice()}
           </span>
           <span className="divider" style={{marginLeft: "20px", marginRight: "10px", }}>|</span>
-          <span style={{marginRight: "10px",}}>Next</span>
+          <span>Next</span>
           <i class="fa fa-chevron-right" aria-hidden="true"></i>
         </div>
       </div>}

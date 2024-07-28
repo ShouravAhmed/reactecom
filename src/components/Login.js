@@ -1,4 +1,6 @@
 import '../assets/styles/Login.css';
+import "../assets/styles/ProductManager.css";
+
 import PhoneIcon from '../assets/images/phone-icon.png';
 import BrandLogo from '../assets/images/fabricraft-logo.png';
 import KeyIcon from '../assets/images/key-icon.jpg';
@@ -27,6 +29,8 @@ function Login() {
     const [otpSent, setOtpSent] = useState(false);
     const [otp, setOtp] = useState("");
     const [phoneNo, setPhoneNo] = useState("");
+
+    const [searchOnGoing, setSearchOnGoing] = useState(false);
     
     const { authData } = useContext(AuthContext);
     const {handleUserLogin, userProfile, showToast} = authData;
@@ -44,12 +48,14 @@ function Login() {
         const data = ('data' in sendOtpResponse) && (await sendOtpResponse.data);
         return [data['status']==='OK', data['message'], data['count']];
     };
-    
+
     const submitButtonClicked = async () => {
         console.log('submitButtonClicked');
 
         if (otpSent) {
+            setSearchOnGoing(true);
             const [status, message] = await handleUserLogin({phoneNo, otp});
+            setSearchOnGoing(false);
             showToast(message);
 
             if(status && otp.length === 6) {
@@ -126,6 +132,9 @@ function Login() {
                         onChange={handleOnchange}
                     />
                 </div>
+
+                {searchOnGoing && (<div class="lds-ripple"><div></div><div></div></div>)}
+
                 <button className="login-button" onClick={submitButtonClicked}>
                     {otpSent ? "Submit" : "Login"}
                 </button>

@@ -993,3 +993,14 @@
   font-size: 0.8em;
   cursor: pointer;
 }
+
+.loading-fixed-bar {
+  position: fixed;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+
+  margin: 0 auto;
+
+  bottom: 140px;
+}

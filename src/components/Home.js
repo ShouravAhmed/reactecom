@@ -19,6 +19,7 @@ import BannerSlider from "./BannerSlider";
 import { useNavigate } from 'react-router-dom';
 
 import { AuthContext } from '../contexts/AuthContext';
+import { DataContext } from '../contexts/DataContext';
 
 
 const axiosInstance = Axios.create({
@@ -30,6 +31,9 @@ function Home() {
 
   const { authData } = useContext(AuthContext);
   const { getAccessToken, } = authData;
+
+  const {dataContextData}  = useContext(DataContext);
+  const { setWishlistItemCount, setCartItemCount } = dataContextData;
 
   const [banners, setBanners] = useState([]);
   const BannersResponse = useQuery(`banners`, async () => {
@@ -105,15 +109,19 @@ function Home() {
   
   const WishListProductsResponse = useQuery(`wishlist-products`, async () => {
     try{
+      console.log('=>> remote : >> wish refatching');
       const token = await getAccessToken();
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       };
-      return axiosInstance.get('product/wishlist/', config);
+      const data = await axiosInstance.get('product/wishlist/', config);
+      console.log('=>> remote : >> wish refatched data:', data);
+      return data;
     }
     catch(e) {
+      console.log('=>> remote : >> wish refatched failed: ', e);
       return {'data':[]};
     }
   }, { 
@@ -122,7 +130,8 @@ function Home() {
   });
 
   const saveUnsavedWishlistItems = useCallback(async (wishlist) => {
-    console.log('wishlist saveUnsavedWishlistItems:', wishlist);
+    console.log('=>> remote : wishlist saveUnsavedWishlistItems:', wishlist);
+    if(wishlist === null) wishlist = [];
 
     const unsavedWishlistItems = [];
     const savedWishlistItems = [];
@@ -137,6 +146,11 @@ function Home() {
     
     console.log('wishlist unsavedWishlistItems:', unsavedWishlistItems);
     if(!unsavedWishlistItems || unsavedWishlistItems.length === 0) {
+
+      if(!savedWishlistItems || savedWishlistItems.length === 0) {
+        console.log("=>> remote : refatching WishListProductsResponse");
+        WishListProductsResponse.refetch();
+      }
       return;
     }
     
@@ -168,23 +182,25 @@ function Home() {
     const localWishlist = JSON.parse(localStorage.getItem('LOCAL_WISHLIST'));
     console.log("localWishlist inited:", localWishlist);
 
-    if(localWishlist && localWishlist.length > 0) {
-      saveUnsavedWishlistItems(localWishlist);
-    }
+    saveUnsavedWishlistItems(localWishlist);
   }, [saveUnsavedWishlistItems]);
   
 
   const CartProductsResponse = useQuery(`cart-products`, async () => {
     try{
+      console.log('=>> remote : >> cart refatching');
       const token = await getAccessToken();
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       };
-      return axiosInstance.get('product/cart/', config);
+      const data = await axiosInstance.get('product/cart/', config);
+      console.log('=>> remote : >> cart refatched data:', data);
+      return data;
     }
     catch(e) {
+      console.log('=>> remote : >> cart refatched failed: ', e);
       return {'data':[]};
     }
   }, { 
@@ -193,7 +209,8 @@ function Home() {
   });
 
   const saveUnsavedCartItems = useCallback(async (cartItems) => {
-    console.log('cartItems saveUnsavedCartItems:', cartItems);
+    console.log('=>> saveUnsavedCartItems: extracting unsaved items from cartlist:', cartItems);
+    if(cartItems === null) cartItems = [];
 
     const unsavedCartItems = [];
     const savedCartItems = [];
@@ -208,6 +225,11 @@ function Home() {
     
     console.log('cartItems unsavedCartItems:', unsavedCartItems);
     if(!unsavedCartItems || unsavedCartItems.length === 0) {
+
+      if(!savedCartItems || savedCartItems.length === 0) {
+        console.log("=>> remote : refatching CartProductsResponse");
+        CartProductsResponse.refetch();
+      }
       return;
     }
     
@@ -239,10 +261,62 @@ function Home() {
     const localCartlist = JSON.parse(localStorage.getItem('LOCAL_CARTLIST'));
     console.log("localCartlist inited:", localCartlist);
 
-    if(localCartlist && localCartlist.length > 0) {
-      saveUnsavedCartItems(localCartlist);
-    }
+    saveUnsavedCartItems(localCartlist);
   }, [saveUnsavedCartItems]);
+
+
+
+  const getUpdatedProductList = (remoteProductList, localString) => {
+    if(remoteProductList === null) remoteProductList = [];
+    let localProductList = JSON.parse(localStorage.getItem(localString));
+    if(localProductList === null) localProductList = [];
+
+    const savedItems = {};
+    for(const item of remoteProductList) {
+      if(item.product.product_id) {
+        savedItems[item.product.product_id] = true;
+      }
+    }
+    const unsavedItems = [];
+    for (const item of localProductList) {
+      if(!item.id) {
+        if(!(item.product.product_id in savedItems)) {
+          unsavedItems.push(item);
+        }
+      }
+    }
+    const updatedProductlist = [...remoteProductList, ...unsavedItems];
+    if(!arraysAreEqual(updatedProductlist, localProductList)) {
+      return updatedProductlist;
+    }
+    return [];
+  }
+
+  useEffect(() => {
+    if(CartProductsResponse.data && CartProductsResponse.data.data && CartProductsResponse.data.data.length > 0) {
+      console.log("=>> Home : remote cartList loaded:", CartProductsResponse.data.data);
+      
+      const updatedProductlist = getUpdatedProductList(CartProductsResponse.data.data, 'LOCAL_CARTLIST');
+      
+      if(updatedProductlist.length > 0) {
+        localStorage.setItem('LOCAL_CARTLIST', JSON.stringify(updatedProductlist));
+        setCartItemCount(updatedProductlist.length);
+      }
+    }
+  }, [CartProductsResponse]);
+
+  useEffect(() => {
+    if(WishListProductsResponse.data && WishListProductsResponse.data.data && WishListProductsResponse.data.data.length > 0) {
+      console.log("=>> remote : wishlist loaded:", WishListProductsResponse.data.data);
+      
+      const updatedProductlist = getUpdatedProductList(WishListProductsResponse.data.data, 'LOCAL_WISHLIST');
+      
+      if(updatedProductlist.length > 0) {
+        localStorage.setItem('LOCAL_WISHLIST', JSON.stringify(updatedProductlist));
+        setWishlistItemCount(updatedProductlist.length);
+      }
+    }
+  }, [WishListProductsResponse]);
   
   return (
     <div className="homepage-container">

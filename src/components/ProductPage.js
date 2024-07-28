@@ -617,9 +617,8 @@ function ProductPage() {
         </div>
       </div>
 
-      {/* Fixed bar container at the bottom */}
       <div className={`product-fixed-bar-container ${selectedSizeInCart ? "product-checkout" : "" }`}>
-        {/* Left side: Add to wishlist */}
+        
         <span onClick={addToWishList} className={productIsInWishList ? "wishlisted-product" : ""}>
           <i class="fa fa-heart" aria-hidden="true"></i>
         </span>
