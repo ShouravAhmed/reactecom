@@ -152,7 +152,7 @@ function ProfilePage() {
             {showErrors() ? <p className='formErrors'>{showErrors()}</p> : ""}
             
             <br />            
-            <div className="profile-row order-history" onClick={() => navigate('/orderhistory')}>
+            <div className="profile-row order-history" onClick={() => navigate('/order-history')}>
               <i className="fa fa-heart" aria-hidden="true" style={{marginLeft: 15}}></i>
               <div className="order-history-text" style={{marginLeft: 25}}>Order History</div>
               <i className="fa fa-chevron-right" aria-hidden="true" style={{textAlign: 'right', marginRight: 15}}></i>

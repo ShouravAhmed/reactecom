@@ -14,8 +14,12 @@ function AuthProvider({children}) {
 
   const [accessToken, setAccessToken] = useState('');
   const [accessTokenTimestamp, setAccessTokenTimestamp] = useState(0);
-  const [refreshToken, setRefreshToken] = useState('');
-  const [userProfile, setUserProfile] = useState(null);
+  const [refreshToken, setRefreshToken] = useState(
+    localStorage.getItem('LOCAL_REFRESH_TOKEN')
+  );
+  const [userProfile, setUserProfile] = useState(
+    JSON.parse(localStorage.getItem('LOCAL_USER_PROFILE'))
+  );
 
 
   useEffect(() => {
@@ -138,12 +142,8 @@ function AuthProvider({children}) {
   }
 
   const getAccessToken = async () => {
-    console.log('getAccessToken');
-
     if (!refreshToken) {
       const localRefreshToken = localStorage.getItem('LOCAL_REFRESH_TOKEN');
-      console.log("localRefreshToken:", localRefreshToken);
-      
       if(localRefreshToken === false) {
         handleUserLogout();
       }
@@ -153,15 +153,10 @@ function AuthProvider({children}) {
     tenMinutesAgo.setMinutes(tenMinutesAgo.getMinutes() - 10);
     const accessTokenTime = new Date(accessTokenTimestamp);
 
-    console.log("UserEffect: " + tenMinutesAgo + " | " + accessTokenTime);
-    console.log("prv accessToken: " + accessToken);
-
     if (!accessToken ||  accessTokenTime < tenMinutesAgo) {
       const token = await issueAccessToken(refreshToken);
-      console.log('getAccessToken: ', token);
       return token;
     }
-    console.log('getAccessToken: ', accessToken);
     return accessToken;
   }
 

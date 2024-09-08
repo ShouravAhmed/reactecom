@@ -23,8 +23,14 @@ import ProductManager from './components/ProductManager';
 import SearchManager from './components/SearchManager';
 import CategoryProducts from './components/CategoryProducts';
 import CategoriesPage from './components/CategoriesPage';
+
 import WishListPage from './components/WishListPage';
 import CartPage from './components/CartPage';
+import DeliveryDetails from './components/DeliveryDetails';
+import CheckoutPage from './components/CheckoutPage';
+import OrderSuccess from './components/OrderSuccess';
+import OrderHistory from './components/OrderHistory';
+import OrderDetails from './components/OrderDetails';
 
 import ProductPage from './components/ProductPage';
 
@@ -75,9 +81,14 @@ function App() {
 
                 <Route path='/wishlist' element={<WishListPage/>} exact/>
                 <Route path='/cart' element={<CartPage/>} exact/>
+                <Route path='/delivery-details' element={<DeliveryDetails/>} exact/>
+                <Route path='/checkout' element={<CheckoutPage/>} exact/>
+                <Route path='/order-success' element={<OrderSuccess/>} exact/>
 
                 <Route path='/' element={<PrivateOutlet/>}>
-                  <Route path='profile' element={<ProfilePage/>}/>
+                  <Route path='profile' element={<ProfilePage/>} exact/>
+                  <Route path='order-history' element={<OrderHistory/>} exact/>
+                  <Route path='order-history/:orderId' element={<OrderDetails/>} exact/>
                 </Route>
 
                 <Route path='admin-panel/' element={<AdminOutlet/>}>

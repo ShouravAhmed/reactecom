@@ -445,13 +445,16 @@ function CartPage() {
   useEffect(() => {
     const fun = async () => {
       const res = await axiosInstance.get('marketing/offer/flat-discount/');
+      localStorage.setItem('LOCAL_FLAT_DISCOUNT', JSON.stringify(res.data));
       setFlatDiscount(res.data);
+      localStorage.removeItem('LOCAL_COUPON_DISCOUNT');
     }
     fun();
   }, []);
 
   const applyCoupon = async (coupon) => {
     if((couponDiscount && couponDiscount.is_valid)) {
+      localStorage.removeItem('LOCAL_COUPON_DISCOUNT');
       setCouponDiscount(null);
       return;
     }
@@ -460,7 +463,15 @@ function CartPage() {
     try{
       setCartOperationOngoing(true);
       const res = await axiosInstance.get(`marketing/offer/validate-coupon/${coupon}/`);
+      
       console.log('cart : applyCoupon =>', res.data);
+      
+      localStorage.setItem('LOCAL_COUPON_DISCOUNT', JSON.stringify(res.data));
+
+      if(res.data.is_valid) {
+        showToast("Coupon discount applied successfully!");
+      }
+
       setCouponDiscount(res.data);
     }
     catch (e) {
@@ -478,49 +489,51 @@ function CartPage() {
 
   const calculateProductsOriginalPrice = () => {
     console.log("cart: calculateProductsOriginalPrice");
-    return cartProducts.reduce((acc, cartItem) => acc + (parseInt(cartItem.product.product_selling_price) * parseInt(cartItem.count)), 0);
+    return (cartProducts.reduce((acc, cartItem) => acc + (parseInt(cartItem.product.product_selling_price) * parseInt(cartItem.count)), 0)).toFixed(2);
   }
 
   const calculateProductsDiscount = () => {
     console.log("cart: calculateProductsTotalDiscount");
-    return cartProducts.reduce((acc, cartItem) => acc + (parseInt(((cartItem.product.product_selling_price * cartItem.product.product_discount) / 100)) * parseInt(cartItem.count)), 0);
+    return (cartProducts.reduce((acc, cartItem) => acc + (((cartItem.product.product_selling_price * cartItem.product.product_discount) / 100) * parseInt(cartItem.count)), 0)).toFixed(2);
   }
 
   const calculateProductsDiscountPrice = () => {
     console.log("cart: calculateProductsDiscountPrice");
-    return (calculateProductsOriginalPrice() - calculateProductsDiscount());
+    return (calculateProductsOriginalPrice() - calculateProductsDiscount()).toFixed(2);
   }
 
   const calculateFlatDiscount = () => {
     console.log("cart: calculateFlatDiscount");
-    if(!flatDiscount.is_available) return 0;
+    if(!flatDiscount.is_available) return (0).toFixed(2);
     if (flatDiscount.discount_type === 'FIXED') {
-      return flatDiscount.discount_value;
+      return parseInt(flatDiscount.discount_value).toFixed(2);
     }
     const price = calculateProductsDiscountPrice();
-    return parseInt((price * flatDiscount.discount_value) / 100);
+    return ((price * flatDiscount.discount_value) / 100).toFixed(2);
   }
 
   const calculateCouponDiscount = () => {
     console.log("cart: calculateCouponDiscount");
-    if(!couponDiscount.is_valid) return 0;
+    if(!couponDiscount.is_valid) return (0).toFixed(2);
     if (couponDiscount.discount_type === 'FIXED') {
-      return couponDiscount.discount_value;
+      return parseInt(couponDiscount.discount_value).toFixed(2);
     }
     const price = calculateProductsDiscountPrice();
-    return parseInt((price * couponDiscount.discount_value) / 100);
+    return ((price * couponDiscount.discount_value) / 100).toFixed(2);
   }
 
   const calculateSubTotal = () => {
     console.log("cart: calculateSubTotal");
     if (couponDiscount && couponDiscount.is_valid) {
-      return (calculateProductsDiscountPrice() - calculateCouponDiscount());
+      return (calculateProductsDiscountPrice() - calculateCouponDiscount()).toFixed(2);
     }
     else if (flatDiscount && flatDiscount.is_available) {
-      return (calculateProductsDiscountPrice() - calculateFlatDiscount());
+      return (calculateProductsDiscountPrice() - calculateFlatDiscount()).toFixed(2);
     }
     return calculateProductsDiscountPrice();
   }
+
+  
 
   const isFreeDelivery = () => {
     console.log("cart: calculateDeliveryCharge");
@@ -537,16 +550,27 @@ function CartPage() {
     </span>);
   }
 
+  const roundingDownDiscount = () => {
+    const subtotal = calculateSubTotal();
+    return (subtotal - (parseInt(subtotal / 10) * 10));
+  }
+
+  const isAdditionalDiscountAvailable = () => {
+    const subTotal = calculateSubTotal();
+    const discount = (parseInt((subTotal-1000+1)/1000) * 100) + roundingDownDiscount();
+    return (discount > 0 ? true : false);
+  }
+
   const calculateAdditionalDiscount = () => {
     console.log("cart: calculateAdditionalDiscount");
     const subTotal = calculateSubTotal();
-    if (subTotal < 999) return false;
-    return (parseInt((subTotal-1000+1)/1000) * 100);
+    const discount = (parseInt((subTotal-1000+1)/1000) * 100) + roundingDownDiscount();
+    return discount.toFixed(2);
   }
 
   const calculateTotalPrice = () => {
     console.log("cart: calculateTotalPrice");
-    return (calculateSubTotal() - calculateAdditionalDiscount());
+    return parseInt(calculateSubTotal() - calculateAdditionalDiscount());
   }
 
   const handleCouponClick = () => {;
@@ -575,13 +599,13 @@ function CartPage() {
     applyCoin(coinAmount);
   };
 
-  const cartNextButtonClicked = async () => {
+  const nextButtonClicked = async () => {
     setCartOperationOngoing(true);
     const isUpdated = await revalidateCart();
     setCartOperationOngoing(false);
 
     if(!isUpdated) {
-      navigate('/checkout');
+      navigate('/delivery-details', {'state': true});
     }
   }
 
@@ -773,22 +797,19 @@ function CartPage() {
             </>
           )}
 
-          {calculateAdditionalDiscount() ?
+          {isAdditionalDiscountAvailable() ?
           <div className="cart-calculation-row">
             <span className="cart-calculation-name">Additional Discount</span>
             <span className="cart-calculation-price">
               ৳{calculateAdditionalDiscount()}
             </span>
           </div> : ""}
-          {
-            isFreeDelivery() && (
-            <div className="cart-calculation-row">
-              <span className="cart-calculation-name">Delivery Charge</span>
-              <span className="cart-calculation-price">
-                ৳0
-              </span>
-            </div>)
-          }
+          <div className="cart-calculation-row">
+            <span className="cart-calculation-name">Delivery Charge</span>
+            <span className="cart-calculation-price" style={{opacity:"0.4"}}>
+              {(isFreeDelivery() ? "৳0" : "applicable")}
+            </span>
+          </div>
 
 
           <hr className="cart-calculation-line" />
@@ -801,18 +822,18 @@ function CartPage() {
           </div>
         </div>
 
-        {cartOperationOngoing && (<div class="lds-ripple loading-fixed-bar"><div></div><div></div></div>)}
+        {cartOperationOngoing && (<div class="lds-ripple loading-fixed-bar" style={{background:"transparent"}}><div></div><div></div></div>)}
 
         <div className="gamify-purchase-fixed-bar">
           <span>{gamifyPurchase()}</span>
         </div>
 
-        <div onClick={() => cartNextButtonClicked()} className="cart-fixed-bar-container" style={{fontSize: "1em"}}>
+        <div onClick={() => nextButtonClicked()} className="cart-fixed-bar-container" style={{fontSize: "1em"}}>
           <span>
             Total Price - ৳{calculateTotalPrice()}
           </span>
           <span className="divider" style={{marginLeft: "20px", marginRight: "10px", }}>|</span>
-          <span>Next</span>
+          <span style={{marginRight: "20px", }}>Next</span>
           <i class="fa fa-chevron-right" aria-hidden="true"></i>
         </div>
       </div>}
