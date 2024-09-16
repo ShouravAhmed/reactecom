@@ -22,7 +22,8 @@ function OrderHistory() {
   const { authData } = useContext(AuthContext);
   const { getAccessToken, showToast } = authData;
 
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState(JSON.parse(localStorage.getItem('LOCAL_ORDER_HISTORY')));
+
   const [workInProgress, setWorkInProgress] = useState(false);
   const [orderHistoryInitiated, setOrderHistoryInitiated] = useState(false);
 
@@ -52,6 +53,7 @@ function OrderHistory() {
       if(UsersOrders.data && UsersOrders.data.data && UsersOrders.data.data.length > 0) {
         console.log("users orders loaded:", UsersOrders.data.data);
         
+        localStorage.setItem('LOCAL_ORDER_HISTORY', JSON.stringify(UsersOrders.data.data));
         setOrders(UsersOrders.data.data);
       }
     }
@@ -105,7 +107,7 @@ function OrderHistory() {
             <div className="order-history-header">
                 <span className="order-history-title">ORDER ID</span>
                 <span className="order-history-id">
-                  <i class="fa fa-copy" aria-hidden="true" style={{marginRight: "5px", cursor: "pointer"}} onClick={(e) => {
+                  <i className="fa fa-copy" aria-hidden="true" style={{marginRight: "5px", cursor: "pointer"}} onClick={(e) => {
                     e.stopPropagation();
                     navigator.clipboard.writeText(order.order_id);
                     showToast("Order ID copied!");

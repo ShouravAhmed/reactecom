@@ -104,6 +104,7 @@ function AuthProvider({children}) {
 
     localStorage.removeItem('LOCAL_CARTLIST');
     localStorage.removeItem('LOCAL_WISHLIST'); 
+    localStorage.removeItem('LOCAL_ORDER_HISTORY');
     
     setAccessToken('');
     setRefreshToken('');

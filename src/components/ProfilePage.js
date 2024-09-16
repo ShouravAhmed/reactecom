@@ -40,6 +40,18 @@ function ProfilePage() {
   const {dataContextData}  = useContext(DataContext);
   const { setCartItemCount, setWishlistItemCount } = dataContextData;
 
+  const registeredYearsAgo = () => {
+    if (!userProfile.date_joined) return 0;
+  
+    const joinedDate = new Date(userProfile.date_joined.split('.')[0] + 'Z');
+    const currentDate = new Date();
+
+    const timeDifference = currentDate - joinedDate;
+    const millisecondsInYear = 365.25 * 24 * 60 * 60 * 1000;
+    const yearsAgo = timeDifference / millisecondsInYear;
+    return Math.ceil(yearsAgo);
+  }
+
   const queryClient = useQueryClient();
   
   const schema = yup.object().shape({
@@ -116,7 +128,7 @@ function ProfilePage() {
               <div className="username">{userProfile.full_name || "User"}</div>
               <div className="registered-since">
                 <img src={ClockIcon} alt="reg" className="registration-icon" />
-                Registered 3 yers ago
+                Registered {registeredYearsAgo()} years ago
               </div>
             </div>
 

@@ -27,6 +27,10 @@ function OrderDetails() {
 
   const [workInProgress, setWorkInProgress] = useState(false);
 
+  const [reviewProduct, setReviewProduct] = useState('');
+  const [reviewProductRating, setReviewProductRating] = useState(5);
+  const [reviewProductReview, setReviewProductReview] = useState('')
+
   const [order, setOrder] = useState({});
 
   const UsersOrder = useQuery(`users-order-${orderId}`, async () => {
@@ -73,6 +77,96 @@ function OrderDetails() {
     }
   }, [UsersOrder.data]);
 
+
+  const UsersOrders = useQuery(`users-orders`, async () => {
+    try{
+      const token = await getAccessToken();
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+      return axiosInstance.get('order', config);
+    }
+    catch(e) {
+      return {'data':[]};
+    }
+  }, { 
+    staleTime: (60) * (60 * 1000),
+    cacheTime: (6 * 60) * (60 * 1000),
+  });
+
+  useEffect(() => {
+    try{
+      if(UsersOrders.data && UsersOrders.data.data && UsersOrders.data.data.length > 0) {
+        localStorage.setItem('LOCAL_ORDER_HISTORY', JSON.stringify(UsersOrders.data.data));
+      }
+    }
+    catch(e) {
+      console.log("Exception:", e);
+    }
+  }, [UsersOrders.data]);
+
+  const updateOrder = async () => {
+    try{
+      const token = await getAccessToken();
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const res = await axiosInstance.get(`order/${orderId}`, config);
+      setOrder(res.data);
+      UsersOrders.refetch();
+    }
+    catch(e) {
+      console.log('=>> order - exception:', e);
+    }
+  }
+
+  const reviewButtonClicked = async (orderedProduct) => {
+    if(reviewProduct === `${orderedProduct.product.product_id}-${orderedProduct.product_size}`) {
+      if(orderedProduct.review_status === 'Approved') {
+        showToast("Review edits are no longer allowed.");
+        return;
+      }
+      const review = {
+        product: orderedProduct.product,
+        order: order,
+        size: orderedProduct.product_size,
+        rating: reviewProductRating,
+        description: reviewProductReview
+      }
+      try{
+        setWorkInProgress(true);
+        const token = await getAccessToken();
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        const res = await axiosInstance.post(`order/ordered-product/review/`, {'review': review}, config);
+        console.log('res: ', res);
+        
+        setWorkInProgress(false);
+        if(res.data.status == 'OK') {
+          showToast('Thank you for your review!');
+          updateOrder();
+        }
+        else {
+          showToast("Review edits are no longer allowed.");
+        }
+      }
+      catch(e) {
+        setWorkInProgress(false);
+      }
+    }
+    else {
+      setReviewProductRating(orderedProduct.rating);
+      setReviewProductReview(orderedProduct.review);
+      setReviewProduct(`${orderedProduct.product.product_id}-${orderedProduct.product_size}`);
+    }
+  }
 
   return (
     <div className="order-details-page">
@@ -197,20 +291,86 @@ function OrderDetails() {
 
       <div className="order-details-items-section">
         <h3>Order Items</h3>
-        {order.ordered_products && order.ordered_products.length > 0 ? (
-          order.ordered_products.map((item, index) => (
-          <div className="order-details-item" key={index}>
-            <div className="order-details-item-details">
-              <span>{item.product.product_name}</span>
-              <span className="order-details-item-price">Price: ৳{parseFloat(item.product_price).toFixed(2)}</span>
-              <span className="order-details-item-subtotal">Subtotal: ৳{(parseFloat(item.product_price) * parseFloat(item.product_quantity)).toFixed(2)}</span>
+        {order.ordered_products && order.ordered_products.length > 0  && order.ordered_products.map((orderedProduct, index) => 
+          <div className={`ordered-product-container ${reviewProduct === `${orderedProduct.product.product_id}-${orderedProduct.product_size}` ? 'expanded' : ''}`} key={index}>
+            <div className="ordered-product" onClick={() => {navigate('/product-page', {'state':orderedProduct.product})}}>
+              <div  className="wishlist-product-image" > 
+                <Image 
+                  imageUrl={orderedProduct.product.profile_image}
+                  altText={orderedProduct.product.product_name}
+                  blurHash={orderedProduct.product.profile_image_blurhash}
+                  width={"100%"}
+                  height={"120px"}
+                  blurHashWidth={"100%"}
+                  blurHashHeight={"120px"}
+                  borderRadius={"8px"}
+                />
+              </div>
+              <div className="cart-product-details">
+                <div className="cart-product-row">
+                  <div className="cart-product-name" style={{fontSize: '1em', marginTop: '5px'}}>{orderedProduct.product.product_name}</div>
+                  <div className="cart-delete-button" style={{border: '2px solid black', borderRadius: '7px', padding: '2px 6px', fontWeight: '600', fontSize: '0.8em'}}>
+                    x {orderedProduct.product_quantity}
+                  </div>
+                </div>
+                <div className="cart-product-row" style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', fontSize: '0.8em'}}>
+                  <div className="product-prices" style={{marginBottom: '10px',}}>
+                    <span>Size: </span>
+                    <span style={{fontWeight: '600'}}>{orderedProduct.product_size}</span>
+                  </div>
+                  <div className="product-prices" style={{marginBottom: '0px', marginTop: '2px'}}>
+                    <span>Price: </span>
+                    <span className="discount-price">৳{orderedProduct.product_price}</span>
+                    <span className="real-price">৳{orderedProduct.product.product_selling_price}</span>
+                    <span className="saving-price">৳{(parseFloat(orderedProduct.product.product_selling_price) - parseFloat(orderedProduct.product_price)).toFixed(2)} saved</span>
+                  </div>
+                  <div className="product-prices" style={{marginTop: '2px'}}>
+                    <div className="cart-product-row" style={{marginTop: '0px'}}>
+                      <div>
+                        <span>Subtotal: </span>
+                        <span style={{fontWeight: '600', color: 'rgb(223, 1, 112)'}}>৳{parseInt(orderedProduct.product_price) * parseInt(orderedProduct.product_quantity)}</span>
+                      </div>
+                      {order.order_status === 'Delivered' && (
+                        <div 
+                          className="order-details-review-button" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            reviewButtonClicked(orderedProduct);
+                          }}
+                          style={{
+                            backgroundColor: (reviewProduct === `${orderedProduct.product.product_id}-${orderedProduct.product_size}`) 
+                              ? 'rgb(223, 1, 112)' 
+                              : 'rgb(119, 0, 255)'
+                          }}
+                        >
+                          {reviewProduct === `${orderedProduct.product.product_id}-${orderedProduct.product_size}` ? 'Submit' : 'Review'}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="order-details-item-actions">
-              <span className="order-details-item-quantity">x {item.product_quantity}</span>
-              <button className="order-details-reorder-button">RE-ORDER</button>
-            </div>
+            {reviewProduct === `${orderedProduct.product.product_id}-${orderedProduct.product_size}` && (
+              <div className="order-review-section">
+                {workInProgress && (<div className="lds-ripple" style={{background: "transparent", height: '10px', margin: '0 auto'}}><div></div><div></div></div>)}
+                <div className="order-review-star-rating">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <i
+                      key={star}
+                      className={`fa fa-star ${star <= reviewProductRating ? 'filled' : ''}`}
+                      onClick={() => setReviewProductRating(star)}
+                    ></i>
+                  ))}
+                </div>
+                
+                <textarea placeholder="Write your review here..." onChange={(e) => {
+                  setReviewProductReview(e.target.value);
+                }} value={reviewProductReview}></textarea>
+              </div>
+            )}
           </div>
-        ))) : ""}
+        )}
       </div>
     </div>
   );

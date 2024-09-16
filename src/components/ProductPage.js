@@ -15,7 +15,40 @@ const axiosInstance = Axios.create({
   baseURL: "http://127.0.0.1:8000/api/",
 });
 
-function ProductPage() {            
+
+const getInitials = (name) => {
+  const initials = name.split(' ').map((word) => word[0]).join('');
+  const randomColor = `#${Math.floor(Math.random()*16777215).toString(16)}`;
+  return { initials, randomColor };
+};
+
+const ReviewCard = ({ review }) => {
+  const { initials, randomColor } = getInitials(review.reviewer_name);
+
+  return (
+    <div className="product-review-card">
+      <div className="product-review-header">
+        <div className="product-review-profile-pic" style={{ backgroundColor: randomColor }}>
+          {initials}
+        </div>
+        <div className="product-reviewer-info">
+          <span className="product-reviewer-name">{review.reviewer_name}</span>
+          <div className="product-review-body">
+            <div className="product-review-rating">
+              {'★'.repeat(Math.round(review.rating))}{''}
+              {Array(5 - Math.round(review.rating)).fill('☆').join('')}
+            </div>
+            <span className="product-review-date">{review.review_date}</span>
+          </div>
+        </div>
+      </div>
+      <p className="product-review-text">{review.review}</p>
+    </div>
+  );
+};
+
+
+function ProductPage() {    
   const navigate = useNavigate();                                           
   const { state } = useLocation();
 
@@ -31,10 +64,11 @@ function ProductPage() {
   const [sizeNotSelected, setSizeNotSelected] = useState(false);
   const [selectedSizeInCart, setSelectedSizeInCart] = useState(false);
 
+  
   useEffect(() => {
     setCurrentProduct(state);
   }, [state]);
-
+  
   const refetchProduct = async (productId) => {
     try{
       const response = await axiosInstance.get(`product/product/${productId}/`);
@@ -45,9 +79,75 @@ function ProductPage() {
       console.log("exception: ", e);
     }
   }
+  
+  const [productReviews, setProductReviews] = useState([]);
+  const [productRating, setProductRating] = useState(5.0);
+  const [visibleReviewCount, setvisibleReviewCount] = useState(3);
+
+  const visibleReviews = productReviews.slice(0, visibleReviewCount);
+
+  const fiveStarPercentage = () => {
+    return ((productReviews.filter(review => parseInt(review.rating) === 5).length * 100.0) / productReviews.length).toFixed(2);
+  }
+  const fiveStarCount = () => {
+    return productReviews.filter(review => parseInt(review.rating) === 5).length;
+  }
+  const fourStarPercentage = () => {
+    return ((productReviews.filter(review => parseInt(review.rating) === 4).length * 100.0) / productReviews.length).toFixed(2);
+  }
+  const fourStarCount = () => {
+    return productReviews.filter(review => parseInt(review.rating) === 4).length;
+  }
+  const threeStarPercentage = () => {
+    return ((productReviews.filter(review => parseInt(review.rating) === 3).length * 100.0) / productReviews.length).toFixed(2);
+  }
+  const threeStarCount = () => {
+    return productReviews.filter(review => parseInt(review.rating) === 3).length;
+  }
+  const twoStarPercentage = () => {
+    return ((productReviews.filter(review => parseInt(review.rating) === 2).length * 100.0) / productReviews.length).toFixed(2);
+  }
+  const twoStarCount = () => {
+    return productReviews.filter(review => parseInt(review.rating) === 2).length;
+  }
+  const oneStarPercentage = () => {
+    return ((productReviews.filter(review => parseInt(review.rating) === 1).length * 100.0) / productReviews.length).toFixed(2);
+  }
+  const oneStarCount = () => {
+    return productReviews.filter(review => parseInt(review.rating) === 1).length;
+  }
+  
+  useEffect(() => {
+    if(!productReviews || productReviews.length == 0) setProductRating(5.0);
+    else setProductRating(productReviews.reduce((sum, review) => sum + parseFloat(review.rating), 0.0) / productReviews.length);
+  }, [productReviews]);
+
+  const fetchProductReview = async (productId) => {
+    try{
+      const token = await getAccessToken();
+      if(!token) {
+        const response = await axiosInstance.get(`order/ordered-product/review/${productId}/`);
+        console.log('=>> reviews:', response?.data);
+        setProductReviews(response?.data);  
+        return;
+      }
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const response = await axiosInstance.get(`order/ordered-product/review/${productId}/`, config);
+      console.log('=>> reviews:', response?.data);
+      setProductReviews(response?.data);
+    }
+    catch (e) {
+      console.log("exception: ", e);
+    }
+  }
 
   useEffect(() => {
     refetchProduct(state.product_id);
+    fetchProductReview(state.product_id);
   }, [state]);
 
   useEffect(() => {
@@ -504,11 +604,20 @@ function ProductPage() {
       </h1>
 
       <div className="product-page-rating-container">
-        <div className="product-page-rating">★</div>
-        <div className="product-page-rating">★</div>
-        <div className="product-page-rating">★</div>
-        <div className="product-page-rating">★</div>
-        <div className="product-page-rating">★</div>
+        <div className="product-page-rating">
+          {/* Full stars */}
+          {[...Array(Math.floor(productRating))].map((_, index) => (
+            <i key={index} className="fa fa-star" aria-hidden="true"></i>
+          ))}
+
+          {/* Half star */}
+          {productRating % 1 !== 0 && <i className="fa fa-star-half-stroke" aria-hidden="true"></i>}
+
+          {/* Empty stars */}
+          {[...Array(5 - Math.ceil(productRating))].map((_, index) => (
+            <i key={index} className="fa-regular fa-star" aria-hidden="true"></i>
+          ))}
+        </div>
       </div>
 
       <div className="product-page-price-container">
@@ -616,6 +725,79 @@ function ProductPage() {
           </div>
         </div>
       </div>
+
+      {productReviews && productReviews.length > 0 && (
+        <div className="product-review-container">
+          <h1>Rating & Reviews</h1>
+          <div className="product-review-rating-summary">
+            <div className="product-review-rating-number">
+              <h2>{productRating.toFixed(2)}</h2>
+              <p>{productReviews.length} ratings</p>
+            </div>
+            <div className="product-review-rating-bars">
+              <div className="product-review-rating-bar">
+                <span className="stars">★★★★★</span>
+                <div className="bar">
+                  <div className="fill" style={{ width: `${fiveStarPercentage()}%` }}></div>
+                </div>
+                <span className="product-review-count">{fiveStarCount()}</span>
+              </div>
+              <div className="product-review-rating-bar">
+                <span className="stars"><b style={{opacity: 0}}>★</b>★★★★</span>
+                <div className="bar">
+                  <div className="fill" style={{ width: `${fourStarPercentage()}%` }}></div>
+                </div>
+                <span className="product-review-count">{fourStarCount()}</span>
+              </div>
+              <div className="product-review-rating-bar">
+                <span className="stars"><b style={{opacity: 0}}>★★</b>★★★</span>
+                <div className="bar">
+                  <div className="fill" style={{ width: `${threeStarPercentage()}%` }}></div>
+                </div>
+                <span className="product-review-count">{threeStarCount()}</span>
+              </div>
+              <div className="product-review-rating-bar">
+                <span className="stars"><b style={{opacity: 0}}>★★★</b>★★</span>
+                <div className="bar">
+                  <div className="fill" style={{ width: `${twoStarPercentage()}%` }}></div>
+                </div>
+                <span className="product-review-count">{twoStarCount()}</span>
+              </div>
+              <div className="product-review-rating-bar">
+                <span className="stars"><b style={{opacity: 0}}>★★★★</b>★</span>
+                <div className="bar">
+                  <div className="fill" style={{ width: `${oneStarPercentage()}%` }}></div>
+                </div>
+                <span className="product-review-count">{oneStarCount()}</span>
+              </div>
+            </div>
+          </div>
+          <h2>{productReviews.length} Review{productReviews.length > 1 ? 's' : ''}</h2>
+          <div className="product-reviews-list">
+            {visibleReviews.map((review) => (
+              <ReviewCard key={review.id} review={review} />
+            ))}
+            {productReviews.length > 3 &&
+              <div className="product-reviews-show-more">
+                <button className="product-reviews-show-more-button" onClick={() => {
+                  setvisibleReviewCount((prv) => {
+                    if(visibleReviewCount >= productReviews.length) return 3;
+                    return prv + 5;
+                  })
+                }}>
+                  <span className="product-reviews-show-more-down-arrows">
+                    {
+                      visibleReviewCount >= productReviews.length ? 
+                        <i class="fa fa-chevron-up" aria-hidden="true"></i> : 
+                        <i class="fa fa-chevron-down" aria-hidden="true"></i>
+                    }
+                  </span> {visibleReviewCount >= productReviews.length ? 'Show Less' : 'Show More'}
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      )}
 
       <div className={`product-fixed-bar-container ${selectedSizeInCart ? "product-checkout" : "" }`}>
         
