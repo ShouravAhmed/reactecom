@@ -19,7 +19,7 @@ import { IsCorrectPhoneNumber } from '../utils/SecurityUtils';
 
 
 const axiosInstance = Axios.create({
-    baseURL: "http://127.0.0.1:8000/api/auth/",
+    baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
   
@@ -42,7 +42,7 @@ function Login() {
     const sendOTP = async (phoneNo) => {
         console.log('sendOTP');
 
-        const sendOtpResponse = await axiosInstance.post("send-otp/", {
+        const sendOtpResponse = await axiosInstance.post("auth/send-otp/", {
             'phone_number': phoneNo,
         });
         const data = ('data' in sendOtpResponse) && (await sendOtpResponse.data);

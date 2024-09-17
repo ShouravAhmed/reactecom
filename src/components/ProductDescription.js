@@ -13,7 +13,7 @@ import Axios from 'axios';
 
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/product/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 
@@ -44,7 +44,7 @@ function ProductDescription() {
         Authorization: `Bearer ${token}`,
       },
     };
-    return axiosInstance.get(`description/category/${state.title}`, config);
+    return axiosInstance.get(`product/description/category/${state.title}`, config);
   });
 
   const createNewDescription = async () => {
@@ -98,7 +98,7 @@ function ProductDescription() {
 
     setIsLoading(true);
     try{
-      const response = await axiosInstance.post("description/", data, config);
+      const response = await axiosInstance.post("product/description/", data, config);
       console.log('product description response: ', await response.data);
       const toast_message = `Saved Successfully : Status - ${response.statusText}`;
       showToast(toast_message);
@@ -134,7 +134,7 @@ function ProductDescription() {
 
     setIsLoading(true);
     try{
-      const response = await axiosInstance.post("description/delete/", data, config);
+      const response = await axiosInstance.post("product/description/delete/", data, config);
       console.log('description response: ', await response.data);
       const toast_message = `Saved Successfully : Status - ${response.statusText}`;
       showToast(toast_message);

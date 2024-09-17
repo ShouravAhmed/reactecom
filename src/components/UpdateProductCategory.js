@@ -14,7 +14,7 @@ import { DataContext } from '../contexts/DataContext';
 
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/product/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 function UpdateProductCategory() {
@@ -100,7 +100,7 @@ function UpdateProductCategory() {
     try{
       console.log('calling saveCategory');
       setIsLoading(true);
-      const response = await axiosInstance.post("category/", formData, config);
+      const response = await axiosInstance.post("product/category/", formData, config);
       console.log('saveCategory response: ', await response.data);
       if ('data' in response) {
         updateProductCategories(await response.data);
@@ -132,7 +132,7 @@ function UpdateProductCategory() {
       setIsLoading(true);
 
       const response = await axiosInstance.post(
-        'category/delete/',
+        'product/category/delete/',
         data, 
         config
       );
@@ -186,7 +186,7 @@ function UpdateProductCategory() {
                 imageUrl={
                   (updatingCategory && updatingCategory.cover_image_preview) ?  
                   updatingCategory.cover_image_preview :
-                  (state && state.cover_image && "http://127.0.0.1:8000/" + state.cover_image)
+                  (state && state.cover_image && `${process.env.REACT_APP_BACKEND_SERVER}/${state.cover_image}`)
                 }
                 altText="Cover"
                 blurHash={state && state.cover_image_blurhash}
@@ -211,7 +211,7 @@ function UpdateProductCategory() {
                 imageUrl={
                   (updatingCategory && updatingCategory.profile_image_preview) ? 
                   updatingCategory.profile_image_preview :
-                  (state && state.profile_image && "http://127.0.0.1:8000/" + state.profile_image)
+                  (state && state.profile_image && `${process.env.REACT_APP_BACKEND_SERVER}/${state.profile_image}`)
                 }
                 altText="Profile"
                 blurHash={state && state.profile_image_blurhash}

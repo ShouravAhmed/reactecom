@@ -15,7 +15,7 @@ import { DataContext } from '../contexts/DataContext';
 import { IsCorrectPhoneNumber } from '../utils/SecurityUtils';
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 function DeliveryDetails() {            

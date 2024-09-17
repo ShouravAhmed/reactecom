@@ -58,7 +58,7 @@ const BannerSlider = ({slides}) => {
             {
                 slides && (currentIndex < slides.length) &&
                 <Image 
-                    imageUrl={'http://127.0.0.1:8000/' + slides[currentIndex].image} 
+                    imageUrl={`${process.env.REACT_APP_BACKEND_SERVER}/${slides[currentIndex].image}`} 
                     altText={""}
                     blurHash={slides[currentIndex].image_blurhash}
                     width={"100%"}

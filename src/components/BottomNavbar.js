@@ -21,7 +21,7 @@ function BottomNavbar() {
           <img src={HomeIcon} alt="Home" className="bottom-navbar-icon"/>
           <span className='bottom-navbar-text'>Home</span>
         </Link>
-        <Link to="/categories" className="bottom-navbar-button-nobadge bottom-navbar-button">
+        <Link to="/category" className="bottom-navbar-button-nobadge bottom-navbar-button">
           <img src={CategoriesIcon} alt="Categories" className="bottom-navbar-icon"/>
           <span className='bottom-navbar-text'>Categories</span>
         </Link>

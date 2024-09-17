@@ -13,7 +13,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import { DataContext } from '../contexts/DataContext';
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 function OrderDetails() {            
@@ -293,7 +293,7 @@ function OrderDetails() {
         <h3>Order Items</h3>
         {order.ordered_products && order.ordered_products.length > 0  && order.ordered_products.map((orderedProduct, index) => 
           <div className={`ordered-product-container ${reviewProduct === `${orderedProduct.product.product_id}-${orderedProduct.product_size}` ? 'expanded' : ''}`} key={index}>
-            <div className="ordered-product" onClick={() => {navigate('/product-page', {'state':orderedProduct.product})}}>
+            <div className="ordered-product" onClick={() => {navigate(`/product/${orderedProduct.product.product_id}`, {'state':orderedProduct.product})}}>
               <div  className="wishlist-product-image" > 
                 <Image 
                   imageUrl={orderedProduct.product.profile_image}

@@ -3,25 +3,25 @@ import React, { useState, useEffect } from "react";
 import Axios from 'axios';
 import { useQuery } from 'react-query';
 
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link, useParams } from 'react-router-dom';
 
 import { Image } from "./Image";
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 function CategoryProducts() {  
   const navigate = useNavigate();
-
-  const { state } = useLocation();
+  const { categorySlug } = useParams(); 
+  
   const [categoryProductList, setCategoryProductList] = useState([]);
   const [searchOnGoing, setSearchOnGoing] = useState(false);
 
-  const fetchCategoryProducts = async (slug) => {
+  const fetchCategoryProducts = async () => {
     try{
       setSearchOnGoing(true);
-      const response = await axiosInstance.get(`product/product/category/${slug}/`);
+      const response = await axiosInstance.get(`product/product/category/${categorySlug}/`);
       setCategoryProductList(response.data);
       setSearchOnGoing(false);
     }
@@ -33,20 +33,20 @@ function CategoryProducts() {
 
   useEffect(() => {
     if(categoryProductList && categoryProductList.length > 0) {
-      localStorage.setItem(`LOCAL_CATEGORY_PRODUCTS_${state.slug}`, JSON.stringify(categoryProductList));
+      localStorage.setItem(`LOCAL_CATEGORY_PRODUCTS_${categorySlug}`, JSON.stringify(categoryProductList));
     }
   }, [categoryProductList]);
   
   useEffect(() => {
-    const categoryProducts = localStorage.getItem(`LOCAL_CATEGORY_PRODUCTS_${state.slug}`);
+    const categoryProducts = localStorage.getItem(`LOCAL_CATEGORY_PRODUCTS_${categorySlug}`);
     if(categoryProducts) {
       setCategoryProductList(JSON.parse(categoryProducts));
     }
   }, []);
 
   useEffect(() => {
-    fetchCategoryProducts(state.slug);
-  }, [state]);
+    fetchCategoryProducts();
+  }, []);
 
 
   console.log('Category Produts loaded');
@@ -67,10 +67,10 @@ function CategoryProducts() {
         {(categoryProductList && categoryProductList.length > 0) && 
             categoryProductList.map((product) => {
                 return (
-                    <div className="search-product-card" key={product.id} onClick={() => {navigate('/product-page', {'state':product})}}>
+                    <div className="search-product-card" key={product.id} onClick={() => {navigate(`/product/${product.product_id}`, {'state':product})}}>
                         <div className="search-product-image">
                           <Image 
-                            imageUrl={'http://127.0.0.1:8000/' + product.profile_image}
+                            imageUrl={`${process.env.REACT_APP_BACKEND_SERVER}/${product.profile_image}`}
                             altText={product.product_name}
                             blurHash={product.profile_image_blurhash}
                             width={"100%"}

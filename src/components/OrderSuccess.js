@@ -13,7 +13,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import { DataContext } from '../contexts/DataContext';
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 function OrderSuccess() {            

@@ -12,7 +12,7 @@ import Axios from 'axios';
 
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/product/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 
@@ -94,7 +94,7 @@ function ProductCategoryManager() {
     try{
       setIsLoading(true);
       const response = await axiosInstance.post(
-        'category/update-order/',
+        'product/category/update-order/',
         data, 
         config
       );
@@ -142,7 +142,7 @@ function ProductCategoryManager() {
                 </div>
             
                 <div className="product-category-image" onClick={() => navigate(category.slug, {state: category})} style={{cursor: 'pointer'}}>
-                  <Image imageUrl={"http://127.0.0.1:8000/" + category.profile_image} 
+                  <Image imageUrl={`${process.env.REACT_APP_BACKEND_SERVER}/${category.profile_image}`} 
                     altText={category.title} 
                     blurHash={category.profile_image_blurhash}
                     width={100}

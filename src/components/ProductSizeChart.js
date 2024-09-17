@@ -14,7 +14,7 @@ import { object } from 'yup';
 
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/product/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 
@@ -44,7 +44,7 @@ function ProductSizeChart() {
         Authorization: `Bearer ${token}`,
       },
     };
-    return axiosInstance.get(`sizechart/category/${state.title}`, config);
+    return axiosInstance.get(`product/sizechart/category/${state.title}`, config);
   });
 
   const createNewSizeChart = async () => {
@@ -167,7 +167,7 @@ function ProductSizeChart() {
 
     setIsLoading(true);
     try{
-      const response = await axiosInstance.post("sizechart/", data, config);
+      const response = await axiosInstance.post("product/sizechart/", data, config);
       console.log('size-chart response: ', await response.data);
       const toast_message = `Saved Successfully : Status - ${response.statusText}`;
       showToast(toast_message);
@@ -203,7 +203,7 @@ function ProductSizeChart() {
 
     setIsLoading(true);
     try{
-      const response = await axiosInstance.post("sizechart/delete/", data, config);
+      const response = await axiosInstance.post("product/sizechart/delete/", data, config);
       console.log('size-chart response: ', await response.data);
       const toast_message = `Saved Successfully : Status - ${response.statusText}`;
       showToast(toast_message);

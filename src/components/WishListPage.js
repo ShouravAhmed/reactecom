@@ -13,7 +13,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import { DataContext } from '../contexts/DataContext';
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 function WishListPage() {           
@@ -235,10 +235,10 @@ function WishListPage() {
       </div>
 
       {wishListProducts && wishListProducts.map((wishlistItem) => 
-        <div className="wishlist-product-container" onClick={() => {navigate('/product-page', {'state':wishlistItem.product})}}>
+        <div className="wishlist-product-container" onClick={() => {navigate(`/product/${wishlistItem.product.product_id}`, {'state':wishlistItem.product})}}>
           <div  className="wishlist-product-image" > 
             <Image 
-              imageUrl={'http://127.0.0.1:8000/' + wishlistItem.product.profile_image}
+              imageUrl={`${process.env.REACT_APP_BACKEND_SERVER}/${wishlistItem.product.profile_image}`}
               altText={wishlistItem.product.product_name}
               blurHash={wishlistItem.product.profile_image_blurhash}
               width={"100%"}

@@ -1,7 +1,7 @@
 import "../assets/styles/AdminDashboard.css";
 import "../assets/styles/ProductManager.css";
 
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link, useParams } from "react-router-dom";
 import React, { useContext, useState, useEffect, useCallback } from "react";
 import ImageSlider from "./ImageSlider";
 
@@ -12,7 +12,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import { DataContext } from '../contexts/DataContext';
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 
@@ -49,7 +49,9 @@ const ReviewCard = ({ review }) => {
 
 
 function ProductPage() {    
-  const navigate = useNavigate();                                           
+  const navigate = useNavigate();     
+  const { productId } = useParams(); 
+
   const { state } = useLocation();
 
   const { authData } = useContext(AuthContext);
@@ -63,13 +65,14 @@ function ProductPage() {
   const [selectedSize, setSelectedSize] = useState("-");
   const [sizeNotSelected, setSizeNotSelected] = useState(false);
   const [selectedSizeInCart, setSelectedSizeInCart] = useState(false);
-
   
   useEffect(() => {
-    setCurrentProduct(state);
+    if(state) {
+      setCurrentProduct(state);
+    }
   }, [state]);
   
-  const refetchProduct = async (productId) => {
+  const refetchProduct = async () => {
     try{
       const response = await axiosInstance.get(`product/product/${productId}/`);
       setCurrentProduct(response?.data);
@@ -122,7 +125,7 @@ function ProductPage() {
     else setProductRating(productReviews.reduce((sum, review) => sum + parseFloat(review.rating), 0.0) / productReviews.length);
   }, [productReviews]);
 
-  const fetchProductReview = async (productId) => {
+  const fetchProductReview = async () => {
     try{
       const token = await getAccessToken();
       if(!token) {
@@ -146,9 +149,9 @@ function ProductPage() {
   }
 
   useEffect(() => {
-    refetchProduct(state.product_id);
-    fetchProductReview(state.product_id);
-  }, [state]);
+    refetchProduct();
+    fetchProductReview();
+  }, []);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {

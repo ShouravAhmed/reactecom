@@ -11,7 +11,7 @@ import { Image } from "./Image";
 import { AuthContext } from '../contexts/AuthContext';
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 function SearchManager() {  
@@ -92,10 +92,10 @@ function SearchManager() {
         {(productList && productList.length > 0) ? 
             productList.map((product) => {
                 return (
-                    <div className="search-product-card" onClick={() => {navigate('/product-page', {'state':product})}}>
+                    <div className="search-product-card" onClick={() => {navigate(`/product/${product.product_id}`, {'state':product})}}>
                         <div className="search-product-image">
                           <Image 
-                            imageUrl={'http://127.0.0.1:8000/' + product.profile_image}
+                            imageUrl={`${process.env.REACT_APP_BACKEND_SERVER}/${product.profile_image}`}
                             altText={product.product_name}
                             blurHash={product.profile_image_blurhash}
                             width={"100%"}

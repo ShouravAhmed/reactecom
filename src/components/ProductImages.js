@@ -13,7 +13,7 @@ import { useQuery } from 'react-query'
 
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/product/image/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 
@@ -48,7 +48,7 @@ const ProductImages = ({selectedProduct, adminPassword}) => {
         Authorization: `Bearer ${token}`,
       },
     };
-    const response = await axiosInstance.get(`product/${selectedProduct.product_id}/`, config);
+    const response = await axiosInstance.get(`product/image/product/${selectedProduct.product_id}/`, config);
     populateImages(response.data);
     return response;
   }
@@ -113,7 +113,7 @@ const ProductImages = ({selectedProduct, adminPassword}) => {
     try{
       setIsLoading(true);
       const response = await axiosInstance.post(
-        'update-order/',
+        'product/image/update-order/',
         data, 
         config
       );
@@ -157,7 +157,7 @@ const ProductImages = ({selectedProduct, adminPassword}) => {
       console.log('calling saveImage');
       setIsLoading(true);
 
-      const response = await axiosInstance.post("", formData, config);
+      const response = await axiosInstance.post("product/image/", formData, config);
       
       console.log('saveImage response: ', await response.data);
       setIsLoading(false);
@@ -189,7 +189,7 @@ const ProductImages = ({selectedProduct, adminPassword}) => {
       setIsLoading(true);
 
       const response = await axiosInstance.post(
-        'delete/',
+        'product/image/delete/',
         data, 
         config
       );
@@ -235,7 +235,7 @@ const ProductImages = ({selectedProduct, adminPassword}) => {
           </div>
           <Image 
             imageUrl={
-              image && "http://127.0.0.1:8000/" + image.image
+              image && `${process.env.REACT_APP_BACKEND_SERVER}/${image.image}`
             }
             altText="Img"
             blurHash={image && image.image_blurhash}

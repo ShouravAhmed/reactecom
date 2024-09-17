@@ -74,10 +74,10 @@ function App() {
               <Routes>
                 <Route path='/' element={<Home/>} exact/>
                 <Route path='/search' element={<SearchManager/>} exact/>
-                <Route path='/category-products' element={<CategoryProducts/>} exact/>
-                <Route path='/categories' element={<CategoriesPage/>} exact/>
+                <Route path='/category/:categorySlug' element={<CategoryProducts/>} exact/>
+                <Route path='/category' element={<CategoriesPage/>} exact/>
 
-                <Route path='/product-page' element={<ProductPage/>} exact/>
+                <Route path='/product/:productId' element={<ProductPage/>} exact/>
 
                 <Route path='/wishlist' element={<WishListPage/>} exact/>
                 <Route path='/cart' element={<CartPage/>} exact/>

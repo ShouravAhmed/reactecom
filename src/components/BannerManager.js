@@ -14,7 +14,7 @@ import { useQuery } from 'react-query'
 
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/marketing/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 
@@ -45,7 +45,7 @@ function BannerManager() {
   };
 
   const fetchBanners = async () => {
-    const response = await axiosInstance.get('banner/');
+    const response = await axiosInstance.get('marketing/banner/');
     populateBanners(response.data);
     return response;
   }
@@ -113,7 +113,7 @@ function BannerManager() {
     try{
       setIsLoading(true);
       const response = await axiosInstance.post(
-        'banner/update-order/',
+        'marketing/banner/update-order/',
         data, 
         config
       );
@@ -180,7 +180,7 @@ function BannerManager() {
     try{
       console.log('calling saveBanner');
       setIsLoading(true);
-      const response = await axiosInstance.post("banner/", formData, config);
+      const response = await axiosInstance.post("marketing/banner/", formData, config);
       console.log('saveBanner response: ', await response.data);
       setIsLoading(false);
 
@@ -212,7 +212,7 @@ function BannerManager() {
       setIsLoading(true);
 
       const response = await axiosInstance.post(
-        'banner/delete/',
+        'marketing/banner/delete/',
         data, 
         config
       );
@@ -297,7 +297,7 @@ function BannerManager() {
               
                 </div>
                 <div className="product-category-row" style={{marginTop: 0, paddingTop: 0, cursor: 'pointer'}} onClick={() => {bannerItemClicked(banner)}} >
-                  <Image imageUrl={"http://127.0.0.1:8000/" + banner.image} 
+                  <Image imageUrl={`${process.env.REACT_APP_BACKEND_SERVER}/${banner.image}`}
                     altText={banner.title} 
                     blurHash={banner.image_blurhash}
                     width={'100%'}
@@ -340,7 +340,7 @@ function BannerManager() {
                         imageUrl={
                           (updatingBanner && updatingBanner.image_preview) ?  
                           updatingBanner.image_preview :
-                          (selectedBanner && selectedBanner.image && "http://127.0.0.1:8000/" + selectedBanner.image)
+                          (selectedBanner && selectedBanner.image && `${process.env.REACT_APP_BACKEND_SERVER}/${selectedBanner.image}`)
                         }
                         altText="Cover"
                         blurHash={selectedBanner && selectedBanner.image_blurhash}

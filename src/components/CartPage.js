@@ -13,7 +13,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import { DataContext } from '../contexts/DataContext';
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 function CartPage() {            
@@ -658,10 +658,10 @@ function CartPage() {
         </div>
         
         {cartProducts.map((cartItem) => 
-          <div key={cartItem.product.product_id+cartItem.size} className="cart-product-container" onClick={() => {navigate('/product-page', {'state':cartItem.product})}}>
+          <div key={cartItem.product.product_id+cartItem.size} className="cart-product-container" onClick={() => {navigate(`/product/${cartItem.product.product_id}`, {'state':cartItem.product})}}>
             <div  className="cart-product-image" > 
               <Image 
-                imageUrl={'http://127.0.0.1:8000/' + cartItem.product.profile_image}
+                imageUrl={`${process.env.REACT_APP_BACKEND_SERVER}/${cartItem.product.profile_image}`}
                 altText={cartItem.product.product_name}
                 blurHash={cartItem.product.profile_image_blurhash}
                 width={"100%"}

@@ -12,7 +12,7 @@ import { useQuery } from 'react-query';
 import { Image } from './Image';
 
 const axiosInstance = Axios.create({
-    baseURL: "http://127.0.0.1:8000/api/product/",
+    baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 
@@ -37,7 +37,7 @@ function ProductDashboard() {
   const [popularitySortState, setPopularitySortState] = useState(0);
 
   const ProductCategories = useQuery(`product-categories`, async () => {
-    return axiosInstance.get('category/');
+    return axiosInstance.get('product/category/');
   });
 
     const populateVisibleProductList = async (productList) => {
@@ -89,7 +89,7 @@ function ProductDashboard() {
         console.log(`fetchAdminProducts: (${searchId})(${searchName})(${searchCategoryTitle})`);
 
         const response = await axiosInstance.post(
-            'product/admin-product/',
+            'product/product/admin-product/',
             {'searchId':searchId, 'searchName':searchName, 'searchCategoryTitle':searchCategoryTitle}, 
             config
         );

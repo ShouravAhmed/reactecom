@@ -6,7 +6,7 @@ import { Toast } from '../components/Toast';
 export const AuthContext = createContext()
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/auth/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 function AuthProvider({children}) {
@@ -53,7 +53,7 @@ function AuthProvider({children}) {
         console.log("prv accessToken: " + accessToken);
 
         if (!accessToken ||  accessTokenTime < tenMinutesAgo) {
-          const refreshTokenResponse = await axiosInstance.post("token/refresh/", {
+          const refreshTokenResponse = await axiosInstance.post("auth/token/refresh/", {
             'refresh': refreshToken,
           });
     
@@ -73,7 +73,7 @@ function AuthProvider({children}) {
                 Authorization: `Bearer ${token}`,
               },
             };
-            const UserDataResponse = await axiosInstance.get("get-user/", config);
+            const UserDataResponse = await axiosInstance.get("auth/get-user/", config);
             const userData = UserDataResponse.data.user;
     
             setUserProfile(userData);
@@ -119,7 +119,7 @@ function AuthProvider({children}) {
       return;
     }
     try {
-      const response = await axiosInstance.post("token/refresh/", {
+      const response = await axiosInstance.post("auth/token/refresh/", {
         'refresh': refreshToken,
       });
 
@@ -163,7 +163,7 @@ function AuthProvider({children}) {
 
   const handleUserLogin = useCallback(async ({phoneNo, otp}) => {
     try{
-      const loginResponse = await axiosInstance.post("token/", {
+      const loginResponse = await axiosInstance.post("auth/token/", {
         'phone_number': phoneNo,
         'otp': otp,
         'password': '4321',
@@ -212,7 +212,7 @@ function AuthProvider({children}) {
           localStorage.setItem('LOCAL_USER_PROFILE', JSON.stringify({ ...data}));
           return data;
         });                                      
-        await axiosInstance.post("update-user/", {
+        await axiosInstance.post("auth/update-user/", {
           'full_name': userData['full_name'],
           'email': userData['email'],
           'address': userData['address']
@@ -221,7 +221,7 @@ function AuthProvider({children}) {
         console.log('Profile updated successfully');
       } 
       else {
-        const response = await axiosInstance.get("get-user/", config);
+        const response = await axiosInstance.get("auth/get-user/", config);
         const data = response.data.user;
 
         setUserProfile(data);

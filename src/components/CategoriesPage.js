@@ -8,7 +8,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Image } from "./Image";
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 function CategoriesPage() {  
@@ -52,9 +52,9 @@ function CategoriesPage() {
             productCategories.map((category) => {
                 return (
                     <div className="category-item-card" key={category.id}>
-                        <div className="category-item-image" onClick={() => navigate('/category-products', {state: category})}> 
+                        <div className="category-item-image" onClick={() => navigate(`/category/${category.slug}`)}> 
                           <Image 
-                            imageUrl={'http://127.0.0.1:8000/' + category.profile_image}
+                            imageUrl={`${process.env.REACT_APP_BACKEND_SERVER}/${category.profile_image}`}
                             altText={category.title}
                             blurHash={category.profile_image_blurhash}
                             width={"100%"}

@@ -16,7 +16,7 @@ import { DataContext } from "../contexts/DataContext";
 import { useQuery } from "react-query";
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/product/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 function ProductManager() {
@@ -45,7 +45,7 @@ function ProductManager() {
   const ProductCategories = useQuery(
     `product-categories`,
     async () => {
-      const response = await axiosInstance.get("category/");
+      const response = await axiosInstance.get("product/category/");
       if (response.data) {
         if (
           !("product_category" in updatingProduct) &&
@@ -70,11 +70,11 @@ function ProductManager() {
       };
 
       const productDescription = await axiosInstance.get(
-        `description/category/${selectedProductCategory?.title}`,
+        `product/description/category/${selectedProductCategory?.title}`,
         config
       );
       const productSizeChart = await axiosInstance.get(
-        `sizechart/category/${selectedProductCategory?.title}`,
+        `product/sizechart/category/${selectedProductCategory?.title}`,
         config
       );
 
@@ -335,7 +335,7 @@ function ProductManager() {
     try {
       console.log("calling saveCategory");
       setIsLoading(true);
-      const response = await axiosInstance.post("category/", formData, config);
+      const response = await axiosInstance.post("product/category/", formData, config);
       console.log("saveCategory response: ", await response.data);
       if ("data" in response) {
         updateProductCategories(await response.data);
@@ -369,7 +369,7 @@ function ProductManager() {
       setIsLoading(true);
 
       const response = await axiosInstance.post(
-        "product/delete/",
+        "product/product/delete/",
         data,
         config
       );
@@ -408,7 +408,7 @@ function ProductManager() {
 
     setIsLoading(true);
     try {
-      const response = await axiosInstance.post("product/", data, config);
+      const response = await axiosInstance.post("product/product/", data, config);
       console.log("save product response: ", await response.data);
       const toast_message = `Saved Successfully : Status - ${response.statusText}`;
       showToast(toast_message);

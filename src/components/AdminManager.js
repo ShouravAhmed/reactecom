@@ -15,7 +15,7 @@ import { useQuery } from 'react-query'
 import Axios from 'axios';
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/auth/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 const staffLevels = [
@@ -55,7 +55,7 @@ function AdminManager() {
         Authorization: `Bearer ${token}`,
       },
     };
-    return axiosInstance.get("get-admin-list/", config);
+    return axiosInstance.get("auth/get-admin-list/", config);
   });
 
   const openPopup = (admin) => {
@@ -93,7 +93,7 @@ function AdminManager() {
       },
     };
 
-    const response = await axiosInstance.post("update-admin/", admin, config);
+    const response = await axiosInstance.post("auth/update-admin/", admin, config);
     setIsLoading(false);
 
     showToast(response.data.toast);

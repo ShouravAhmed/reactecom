@@ -5,14 +5,14 @@ import Axios from "axios";
 import { useQuery } from 'react-query';
 
 const axiosInstance = Axios.create({
-    baseURL: "http://127.0.0.1:8000/api/product/",
+    baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
   
 const ImageSlider = ({productId}) => {
     const [productImages, setProductImages] = useState([]);
 
     const productImagesrResponse = useQuery(`product-photos-${productId}`, async () => {
-        return axiosInstance.get(`image/product/${productId}`);
+        return axiosInstance.get(`product/image/product/${productId}`);
     }, { 
         staleTime: (60) * (60 * 1000),
         cacheTime: (6 * 60) * (60 * 1000),
@@ -74,7 +74,7 @@ const ImageSlider = ({productId}) => {
                 {
                     productImages && (currentIndex < productImages.length) &&
                     <Image 
-                        imageUrl={'http://127.0.0.1:8000/' + productImages[currentIndex].image} 
+                        imageUrl={`${process.env.REACT_APP_BACKEND_SERVER}/${productImages[currentIndex].image}`} 
                         altText={""}
                         blurHash={productImages[currentIndex].image_blurhash}
                         width={"100%"}

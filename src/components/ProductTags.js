@@ -12,7 +12,7 @@ import { useQuery } from 'react-query'
 
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/product/tag/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 
@@ -32,7 +32,7 @@ const ProductTags = ({selectedProduct, adminPassword}) => {
         Authorization: `Bearer ${token}`,
       },
     };
-    const response = await axiosInstance.get(`product/${selectedProduct.product_id}/`, config);
+    const response = await axiosInstance.get(`product/tag/product/${selectedProduct.product_id}/`, config);
     console.log('fetch tag response: ', response)
     return response.data;
   }
@@ -63,7 +63,7 @@ const ProductTags = ({selectedProduct, adminPassword}) => {
       console.log('calling saveTag');
       setIsLoading(true);
 
-      const response = await axiosInstance.post("", productTag, config);
+      const response = await axiosInstance.post("product/tag/", productTag, config);
       
       console.log('saveTag response: ', await response.data);
       setIsLoading(false);
@@ -97,7 +97,7 @@ const ProductTags = ({selectedProduct, adminPassword}) => {
       setIsLoading(true);
 
       const response = await axiosInstance.post(
-        'delete/',
+        'product/tag/delete/',
         data, 
         config
       );

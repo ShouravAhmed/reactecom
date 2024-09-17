@@ -23,7 +23,7 @@ import { DataContext } from '../contexts/DataContext';
 
 
 const axiosInstance = Axios.create({
-  baseURL: "http://127.0.0.1:8000/api/",
+  baseURL: `${process.env.REACT_APP_BACKEND_SERVER}/api/`,
 });
 
 function Home() {
@@ -376,9 +376,9 @@ function Home() {
             <div className="category-product-list" key={category.id}>
               <div className="category-description"> 
                 <h2 className="category-title">{category.title}</h2>
-                <div className="category-cover" onClick={() => navigate('category-products', {state: category})}>
+                <div className="category-cover" onClick={() => navigate(`/category/${category.slug}`)}>
                   <Image 
-                    imageUrl={'http://127.0.0.1:8000/' + category.cover_image}
+                    imageUrl={`${process.env.REACT_APP_BACKEND_SERVER}/${category.cover_image}`}
                     altText={category.title}
                     blurHash={category.cover_image_blurhash}
                     width={"100%"}
@@ -394,10 +394,10 @@ function Home() {
                   category.two_in_a_row ?
                   (category.title in homePageProducts) && homePageProducts[category.title]?.slice(0, 4).map((product) => {
                     return (
-                        <div className="product-two-card" onClick={() => {navigate('/product-page', {'state':product})}}>
+                        <div className="product-two-card" onClick={() => {navigate(`/product/${product.product_id}`, {'state':product})}}>
                           <div className="product-two-image">
                             <Image 
-                              imageUrl={'http://127.0.0.1:8000/' + product.profile_image}
+                              imageUrl={`${process.env.REACT_APP_BACKEND_SERVER}/${product.profile_image}`}
                               altText={product.product_name}
                               blurHash={product.profile_image_blurhash}
                               width={"100%"}
@@ -418,10 +418,10 @@ function Home() {
                   }) : (
                   category.title in homePageProducts) && homePageProducts[category.title]?.map((product) => {
                     return(
-                      <div className="product-three-card" onClick={() => {navigate('/product-page', {'state':product})}}>
+                      <div className="product-three-card" onClick={() => {navigate(`/product/${product.product_id}`, {'state':product})}}>
                         <div className="product-three-image">
                           <Image 
-                            imageUrl={'http://127.0.0.1:8000/' + product.profile_image}
+                            imageUrl={`${process.env.REACT_APP_BACKEND_SERVER}/${product.profile_image}`}
                             altText={product.product_name}
                             blurHash={product.profile_image_blurhash}
                             width={"100%"}
