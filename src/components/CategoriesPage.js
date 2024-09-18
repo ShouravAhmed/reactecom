@@ -23,11 +23,12 @@ function CategoriesPage() {
     }
   );
   useEffect(() => {
-    if(!ProductCategoriesResponse.isLoading && ProductCategoriesResponse.data && ProductCategoriesResponse.data.data) {
+    if(ProductCategoriesResponse.data && ProductCategoriesResponse.data.data) {
       setProductCategories(ProductCategoriesResponse.data.data);
       localStorage.setItem('LOCAL_PRODUCT_CATEGORIES', JSON.stringify(ProductCategoriesResponse.data.data));
     }
-  }, [ProductCategoriesResponse]);
+  }, [ProductCategoriesResponse.data]);
+
   useEffect(() => {
     const localProductCategories = localStorage.getItem('LOCAL_PRODUCT_CATEGORIES');
     if(localProductCategories) {

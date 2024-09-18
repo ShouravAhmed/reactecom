@@ -342,30 +342,30 @@ function Home() {
           <p>Shirts</p>
         </div>
         <div className="category-card">
-          <img src={TrouserIcon} alt="Polo"/>
-          <p>Trouser</p>
+          <img style={{height:'50px', width: '50px'}} src={TrouserIcon} alt="Trouser"/>
+          <p style={{transform: 'translate(0%, -7px)'}}>Trouser & Pants</p>
         </div>
         <div className="category-card">
-          <img src={TshirtIcon} alt="Polo"/>
+          <img src={TshirtIcon} alt="Tees"/>
           <p>Tees</p>
         </div>
       </div>
 
       <div className="categories-container2">
         <div className="category-card">
-          <img src={GraphicTshirtIcon} alt="Polo"/>
-          <p>Graphic Tees</p>
+        <img style={{height:'50px', width: '50px'}} src={GraphicTshirtIcon} alt="Graphic Tees"/>
+          <p style={{transform: 'translate(0%, -5px)'}}>Graphic Tees</p>
         </div>
         <div className="category-card">
-          <img src={ShortsIcon} alt="Polo"/>
-          <p>Shorts</p>
+          <img src={ShortsIcon} alt="Shorts"/>
+          <p style={{transform: 'translate(0%, -3px)'}}>Shorts & Boxer</p>
         </div>
         <div className="category-card">
-          <img src={AccessoriesIcon} alt="Polo"/>
+          <img src={AccessoriesIcon} alt="Accessories"/>
           <p>Accessories</p>
         </div>
         <div className="category-card category-card-offer">
-          <img src={OfferIcon} alt="Polo"/>
+          <img src={OfferIcon} alt="Offer"/>
           <p>Offer</p>
         </div>
       </div>

@@ -63,7 +63,13 @@ function CategoryProducts() {
 
       {searchOnGoing && (<div class="lds-ripple"><div></div><div></div></div>)}
 
-        <div className="search-product-card-container"> 
+      <h2 className="category-title">
+        {categoryProductList && categoryProductList.length > 0 && 
+          (categoryProductList[0].product_category.title)
+        }
+      </h2>
+
+      <div className="search-product-card-container"> 
         {(categoryProductList && categoryProductList.length > 0) && 
             categoryProductList.map((product) => {
                 return (

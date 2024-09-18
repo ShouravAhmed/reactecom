@@ -290,6 +290,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  text-align: center;
 }
 .category-card-offer {
   background-color: rgb(119, 0, 255);
@@ -319,6 +320,12 @@
 .category-title {
   margin-bottom: 10px;
   font-size:large;
+}
+
+
+.category-product-page-title {
+  margin: 0;
+  font-size:medium;
 }
 
 .category-cover {
