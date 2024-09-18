@@ -1,18 +1,25 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Image } from "./Image";
+import { useNavigate } from 'react-router-dom';
 
 
 const BannerSlider = ({slides}) => {
+    const navigate = useNavigate();
+
     const [currentIndex, setCurrentIndex] = useState(0)
     const timerRef = useRef(null);
 
     const goToNextSlide = useCallback(() => {
+        setStartingX(0);
+        setMovingX(0);
         setCurrentIndex((prv) => {
             return ((prv + 1 >= (slides ? slides.length : 0)) ? 0 : prv + 1);
         });
     }, [setCurrentIndex, slides]);
 
     const goToPreviousSlide = () => {
+        setStartingX(0);
+        setMovingX(0);
         setCurrentIndex((prv) => {
             return ((prv - 1 < 0) ? (slides ? slides.length : 1) - 1 : prv - 1);
         });
@@ -24,6 +31,7 @@ const BannerSlider = ({slides}) => {
     const [movingY, setMovingY] = useState(0);
 
     const touchStart = (e) => {
+        e.stopPropagation();
         setStartingX(e.touches[0].clientX);
         setStartingY(e.touches[0].clientY);
     }
@@ -33,6 +41,7 @@ const BannerSlider = ({slides}) => {
     }
 
     const touchEnd = () => {
+        if(movingX === 0 || startingX === 0) return;
         if(startingX+100 < movingX) {
             goToPreviousSlide();
         }
@@ -52,7 +61,12 @@ const BannerSlider = ({slides}) => {
     }, [currentIndex, goToNextSlide]);
 
     return (
-        <div onTouchStart={touchStart}
+        <div onClick={(e) => {
+                e.stopPropagation();
+                console.log('=>> banner catagory:', slides[currentIndex].redirect_url);
+                navigate(`/category/${slides[currentIndex].redirect_url}`);
+            }}  
+            onTouchStart={touchStart}
             onTouchMove={touchMove}
             onTouchEnd={touchEnd}>
             {

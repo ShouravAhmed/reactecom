@@ -624,9 +624,9 @@ function ProductPage() {
       </div>
 
       <div className="product-page-price-container">
-        <span className="product-page-discount-price">৳{currentProduct.product_selling_price - ((currentProduct.product_selling_price * currentProduct.product_discount) / 100)}</span>
-        <span className="product-page-selling-price">৳{currentProduct.product_selling_price}</span>
-        <span className="product-page-saving">Save ৳{currentProduct.product_selling_price - (currentProduct.product_selling_price - ((currentProduct.product_selling_price * currentProduct.product_discount) / 100))}</span>
+        <span className="product-page-discount-price">৳{(parseFloat(currentProduct.product_selling_price) - ((parseFloat(currentProduct.product_selling_price) * parseFloat(currentProduct.product_discount)) / 100.0)).toFixed(2)}</span>
+        <span className="product-page-selling-price">৳{parseFloat(currentProduct.product_selling_price).toFixed(2)}</span>
+        <span className="product-page-saving">Save ৳{(parseFloat(currentProduct.product_selling_price) - (parseFloat(currentProduct.product_selling_price) - ((parseFloat(currentProduct.product_selling_price) * parseFloat(currentProduct.product_discount)) / 100.0))).toFixed(0)}</span>
         <span className="product-page-discount-percentage">({parseInt(currentProduct.product_discount)}% off)</span>
       </div>
 

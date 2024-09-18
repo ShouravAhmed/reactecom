@@ -409,8 +409,8 @@ function Home() {
                           </div>
                           <h3 className="product-name">{product.product_name}</h3>
                           <div className="product-prices">
-                            <span className="discount-price">৳{product.product_selling_price - ((product.product_selling_price * product.product_discount) / 100)}</span>
-                            <span className="real-price">৳{product.product_selling_price}</span>
+                            <span className="discount-price">৳{(parseFloat(product.product_selling_price) - ((parseFloat(product.product_selling_price) * parseFloat(product.product_discount)) / 100.0)).toFixed(0)}</span>
+                            <span className="real-price">৳{parseFloat(product.product_selling_price).toFixed(0)}</span>
                             <div className="discount-percentage discount-font-two">{parseInt(product.product_discount)}% off</div>
                           </div>
                         </div>
@@ -433,9 +433,9 @@ function Home() {
                         </div>
                         <h3 className="product-name">{product.product_name}</h3>
                         <div className="product-prices">
-                          <span className="discount-price">৳{product.product_selling_price - ((product.product_selling_price * product.product_discount) / 100)}</span>
-                          <span className="real-price">৳{product.product_selling_price}</span>
-                          <div className="discount-percentage discount-font-three">{parseInt(product.product_discount)}% off</div>
+                          <span className="discount-price">৳{(parseFloat(product.product_selling_price) - ((parseFloat(product.product_selling_price) * parseFloat(product.product_discount)) / 100.0)).toFixed(0)}</span>
+                          <span className="real-price">৳{parseFloat(product.product_selling_price).toFixed(0)}</span>
+                          <div className="discount-percentage discount-font-two">{parseInt(product.product_discount)}% off</div>
                         </div>
                       </div>
                     )
