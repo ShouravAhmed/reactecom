@@ -209,7 +209,7 @@ function CartPage() {
         if(!((item.product.product_id + item.size) in cartProductsMap)) {
           let updatedItem = {...item, };
           if('product_stock' in updatedItem.product) {
-            updatedItem.count = Math.min(updatedItem.count, updatedItem.product.product_stock[updatedItem.size]);
+            updatedItem.count = Math.min(updatedItem.count, parseInt(updatedItem.product.product_stock[updatedItem.size]));
           }
           unsavedItems.push(updatedItem);
         }
@@ -221,12 +221,9 @@ function CartPage() {
 
     for(let i = 0; i < updatedCartlist.length; i++) {
       if('product_stock' in updatedCartlist[i].product) {
-        if(updatedCartlist[i].count > updatedCartlist[i].product.product_stock[updatedCartlist[i].size]) {
+        if(updatedCartlist[i].count > parseInt(updatedCartlist[i].product.product_stock[updatedCartlist[i].size])) {
           
-          console.log(`=>> cart : name: ${updatedCartlist[i].product.product_name} size: ${updatedCartlist[i].size} quantity: ${updatedCartlist[i].count}`);
-          console.log(`=>> cart : available quantity: ${updatedCartlist[i].product.product_stock[updatedCartlist[i].size]}`);
-          
-          updatedCartlist[i].count = updatedCartlist[i].product.product_stock[updatedCartlist[i].size];
+          updatedCartlist[i].count = parseInt(updatedCartlist[i].product.product_stock[updatedCartlist[i].size]);
           if(updatedCartlist[i].count === 0) {
             isItemsStockout = true;
           }
@@ -282,7 +279,7 @@ function CartPage() {
       
       let stockIsLow = false;
       for(const cartItem of localCartlist) {
-        if(cartItem.count + 5 >= cartItem.product.product_stock[cartItem.size]) {
+        if(cartItem.count + 5 >= parseInt(cartItem.product.product_stock[cartItem.size])) {
           stockIsLow = true;  
         }
       }

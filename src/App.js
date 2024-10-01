@@ -42,13 +42,15 @@ import BrandLogoNameWhite from './assets/images/fabricraft-logo-name-white.png';
 
 import { QueryClient, QueryClientProvider } from 'react-query'
 
+import ShopProducts from './components/ShopProducts';
+
 const queryClient = new QueryClient()
 
 
 function App() {
   console.log("App is being loaded . . .");
 
-  const [isSplashVisible, setIsSplashVisible] = useState(false)
+  const [isSplashVisible, setIsSplashVisible] = useState(false);
 
   useEffect(() => {
     console.log('App useEffect Loaded');
@@ -74,9 +76,12 @@ function App() {
               <Routes>
                 <Route path='/' element={<Home/>} exact/>
                 <Route path='/search' element={<SearchManager/>} exact/>
-                <Route path='/category/:categorySlug' element={<CategoryProducts/>} exact/>
-                <Route path='/category' element={<CategoriesPage/>} exact/>
 
+                <Route path='/category' element={<CategoriesPage/>} exact/>
+                <Route path='/category/:categorySlug' element={<CategoryProducts/>} exact/>
+                
+                <Route path="/shop/:query?" element={<ShopProducts/>} exact/>
+                
                 <Route path='/product/:productId' element={<ProductPage/>} exact/>
 
                 <Route path='/wishlist' element={<WishListPage/>} exact/>

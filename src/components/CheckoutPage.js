@@ -181,7 +181,7 @@ function CheckoutPage() {
 
     if (orderResponse.status === 'OK') {
       localStorage.removeItem('LOCAL_CARTLIST');
-      queryClient.removeQueries('wishlist-products');
+      queryClient.removeQueries('cart-products');
       setCartItemCount(0);
       
       showToast('Order placed successfully.');

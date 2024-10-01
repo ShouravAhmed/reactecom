@@ -429,7 +429,6 @@ function ProductManager() {
     <div className="admin-panel-container">
       {state && <h1 className="page-title">#{state.product_id}</h1>}
       <h1 className="page-title">
-        {" "}
         {state ? `Update : ${state.product_name}` : "Create New Product"}
       </h1>
 
